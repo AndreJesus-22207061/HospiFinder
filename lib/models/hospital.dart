@@ -29,15 +29,15 @@ class Hospital {
 
   factory Hospital.fromMap(Map<String, dynamic> map){
     return Hospital(
-      id: map['Id'],
-      name: map['Name'],
-      latitude: map['Latitude'],
-      longitude: map['Longitude'],
-      address: map['Address'],
-      phoneNumber: map['Phone'],
-      email: map['Email'],
-      district: map['District'],
-      hasEmergency: map['HasEmergency'],
+      id: map['Id'] ?? 0,
+      name: map['Name'] ?? 'Sem nome',
+      latitude: (map['Latitude'] ?? 0.0).toDouble(),
+      longitude: (map['Longitude'] ?? 0.0).toDouble(),
+      address: map['Address'] ?? 'Sem morada',
+      phoneNumber: map['Phone'] ?? 0,
+      email: map['Email'] ?? 'sem@email.pt',
+      district: map['District'] ?? 'Desconhecido',
+      hasEmergency: map['HasEmergency'] ?? false,
     );
   }
 
