@@ -27,6 +27,20 @@ class Hospital {
       }) : avaliacoes = avaliacoes ?? [];
 
 
+  factory Hospital.fromMap(Map<String, dynamic> map){
+    return Hospital(
+      id: map['Id'],
+      name: map['Name'],
+      latitude: map['Latitude'],
+      longitude: map['Longitude'],
+      address: map['Address'],
+      phoneNumber: map['Phone'],
+      email: map['Email'],
+      district: map['District'],
+      hasEmergency: map['HasEmergency'],
+    );
+  }
+
   double distanciaDe(double minhaLat , double minhaLon){
     const R = 6371; // raio da Terra em km
 

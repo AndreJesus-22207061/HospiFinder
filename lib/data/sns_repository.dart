@@ -1,11 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:prjectcm/data/sns_datasource.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:flutter/material.dart';
+import 'package:prjectcm/models/waiting_time.dart';
+
+import '../http/http_client.dart';
 
 
 class SnsRepository extends SnsDataSource {
+
+  final HttpClient _client;
+
+  SnsRepository({required HttpClient client}) : _client = client;
 
   List<Hospital> hospitalList = [];
   double _latitude = 0.0;
@@ -15,10 +24,58 @@ class SnsRepository extends SnsDataSource {
   double get latitude => _latitude;
   double get longitude => _longitude;
 
-
-  void insertHospital( Hospital hospital){
-    hospitalList.add(hospital);
+  @override
+  Future<void> attachEvaluation(int hospitalId, EvaluationReport report) {
+    // TODO: implement attachEvaluation
+    throw UnimplementedError();
   }
+
+  @override
+  Future<List<Hospital>> getAllHospitals() async {
+    final response = await _client.get(
+      url: 'https://api-qa.pds.min-saude.pt/api/tems/institution',
+      headers: {
+        'Authorization': 'Bearer VUhlT2tISVdGNmdiNEgwa3I4ZXZGZWloWHNQUXo4SktHYmVRYVR6OHpocz0=',
+      },
+    );
+
+    if (response.statusCode == 200){
+      final reposndeJSON = jsonDecode(response.body);
+      List hospitaisJSON = reposndeJSON['Result'];
+
+      List<Hospital> hospitais = hospitaisJSON.map((hospitalJSON) => Hospital.fromMap(hospitalJSON)).toList();
+
+      return hospitais;
+    }else{
+      throw Exception('status code: ${response.statusCode}');
+    }
+  }
+
+  @override
+  Future<Hospital> getHospitalDetailById(int hospitalId) {
+    // TODO: implement getHospitalDetailById
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) {
+    // TODO: implement getHospitalWaitingTimes
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Hospital>> getHospitalsByName(String name) {
+    // TODO: implement getHospitalsByName
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> insertHospital(Hospital hospital) {
+    // TODO: implement insertHospital
+    throw UnimplementedError();
+  }
+
+
 
   void atualizarLocalizacao(double novaLat, double novaLon) {
     _latitude = novaLat;
@@ -139,7 +196,6 @@ class SnsRepository extends SnsDataSource {
 
     return stars;
   }
-
 
 
 
