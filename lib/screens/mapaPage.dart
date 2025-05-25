@@ -29,8 +29,8 @@ class _MapaPageState extends State<MapaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _currentPos == null
-          ? const Center(
-        child: Text("Loading...", style: TextStyle(color: Colors.black)),
+          ? const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
       )
           : GoogleMap(
         initialCameraPosition:
