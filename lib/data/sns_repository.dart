@@ -33,7 +33,7 @@ class SnsRepository extends SnsDataSource {
   @override
   Future<List<Hospital>> getAllHospitals() async {
     final response = await _client.get(
-      url: 'https://api-qa.pds.min-saude.pt/api/tems/institution',
+      url: 'https://servicos.min-saude.pt/pds/api/tems/institution',
       headers: {
         'Authorization': 'Bearer VUhlT2tISVdGNmdiNEgwa3I4ZXZGZWloWHNQUXo4SktHYmVRYVR6OHpocz0=',
       },
@@ -52,9 +52,31 @@ class SnsRepository extends SnsDataSource {
   }
 
   @override
-  Future<Hospital> getHospitalDetailById(int hospitalId) {
-    // TODO: implement getHospitalDetailById
-    throw UnimplementedError();
+  Future<Hospital> getHospitalDetailById(int hospitalId) async {
+    final response = await _client.get(
+      url: 'https://servicos.min-saude.pt/pds/api/tems/institution/',
+      headers: {
+        'Authorization': 'Bearer VUhlT2tISVdGNmdiNEgwa3I4ZXZGZWloWHNQUXo4SktHYmVRYVR6OHpocz0=',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      final List hospitaisJSON = data['Result'];
+
+      final hospitalMap = hospitaisJSON.firstWhere(
+            (element) => element['Id'] == hospitalId,
+        orElse: () => null,
+      );
+
+      if (hospitalMap == null) {
+        throw Exception('Hospital com ID $hospitalId não encontrado.');
+      }
+
+      return Hospital.fromMap(hospitalMap);
+    } else {
+      throw Exception('Erro ao obter hospital: ${response.statusCode}');
+    }
   }
 
   @override
@@ -95,16 +117,6 @@ class SnsRepository extends SnsDataSource {
     return ultimosAcedidos;
   }
 
-
-  List<Hospital> ordenarPorDistancia(double minhaLat, double minhaLon) {
-    final copia = hospitalList
-        .map((h) => MapEntry(h, h.distanciaDe(minhaLat, minhaLon)))
-        .toList();
-
-    copia.sort((a, b) => a.value.compareTo(b.value));
-
-    return copia.map((e) => e.key).toList();
-  }
 
   List<Hospital> filtrarHospitaisComUrgencia(List<Hospital> lista) {
     return lista.where((hospital) => hospital.hasEmergency).toList();

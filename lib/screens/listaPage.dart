@@ -14,7 +14,7 @@ class ListaPage extends StatefulWidget {
 class _ListaPageState extends State<ListaPage> {
   late TextEditingController _searchController;
   late FocusNode _focusNode;
-  List<Hospital> hospitais = [];
+  late Future<List<Hospital>> _futureHospitais;
   List<Hospital> _hospitaisFiltrados = [];
   String _searchQuery = '';
   bool filtrarurgenciaAtiva = false;
@@ -28,9 +28,7 @@ class _ListaPageState extends State<ListaPage> {
     _searchController = TextEditingController();
     _focusNode = FocusNode();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _atualizarLista();
-    });
+    _futureHospitais = _carregarHospitaisComFiltros();
   }
 
   @override
@@ -40,29 +38,33 @@ class _ListaPageState extends State<ListaPage> {
     super.dispose();
   }
 
-  void _atualizarLista() {
-    final snsRepository = Provider.of<SnsRepository>(context, listen: false);
+  Future<List<Hospital>> _carregarHospitaisComFiltros() async {
+    final snsRepository = context.read<SnsRepository>();
     final userLat = snsRepository.latitude;
     final userLon = snsRepository.longitude;
 
-    List<Hospital> temp = snsRepository.listarHospitais();
+    List<Hospital> hospitais = await snsRepository.getAllHospitals();
 
     if (filtrarurgenciaAtiva) {
-      temp = snsRepository.filtrarHospitaisComUrgencia(temp);
+      hospitais = snsRepository.filtrarHospitaisComUrgencia(hospitais);
     }
 
     if (_ordenarPorSelecionado == 'Distância') {
-      temp = snsRepository.ordenarListaPorDistancia(temp, userLat, userLon);
+      hospitais = snsRepository.ordenarListaPorDistancia(hospitais, userLat, userLon);
     } else if (_ordenarPorSelecionado == 'Avaliação') {
-      temp = snsRepository.ordenarListaPorAvaliacao(temp);
+      hospitais = snsRepository.ordenarListaPorAvaliacao(hospitais);
     }
 
     if (_searchQuery.isNotEmpty) {
-      temp = snsRepository.pesquisarHospitais(temp, _searchQuery);
+      hospitais = snsRepository.pesquisarHospitais(hospitais, _searchQuery);
     }
 
+    return hospitais;
+  }
+
+  void _atualizarLista() {
     setState(() {
-      _hospitaisFiltrados = temp;
+      _futureHospitais = _carregarHospitaisComFiltros();
     });
   }
 
@@ -152,7 +154,7 @@ class _ListaPageState extends State<ListaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final snsRepository = Provider.of<SnsRepository>(context, listen: false);
+    final snsRepository = context.read<SnsRepository>();
     final userLat = snsRepository.latitude;
     final userLon = snsRepository.longitude;
 
@@ -219,46 +221,21 @@ class _ListaPageState extends State<ListaPage> {
             ),
           ),
           Expanded(
-            child: _hospitaisFiltrados.isEmpty
-                ? Center(child: Text('Nenhum hospital registado.'))
-                : ListView.builder(
-              key: Key("list-view"),
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              itemCount: _hospitaisFiltrados.length,
-              itemBuilder: (context, index) {
-                final hospital = _hospitaisFiltrados[index];
-                final Color boxColor = index.isEven
-                    ? Theme.of(context).colorScheme.primaryContainer
-                    : Theme.of(context).colorScheme.secondaryContainer;
+            child: FutureBuilder<List<Hospital>>(
+              future: _futureHospitais,
+              builder: (_, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  print(snapshot.error);
+                  return Center(child: Text('Erro ao carregar hospitais: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('Nenhum hospital registado.'));
+                }
 
-                final estrelas =
-                snsRepository.gerarEstrelasParaHospital(hospital);
-                final media =
-                snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+                final hospitais = snapshot.data!;
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18.0, vertical: 8.0),
-                  child: HospitalBox(
-                    hospital: hospital,
-                    userLat: userLat,
-                    userLon: userLon,
-                    boxColor: boxColor,
-                    estrelas: estrelas,
-                    media: media,
-                    onTap: () {
-                      final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-                      snsRepository.adicionarUltimoAcedido(hospital);
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => HospitalDetailPage(hospital: hospital),
-                        ),
-                      );
-                    },
-                  ),
-                );
+                return buildList(hospitais: hospitais, snsRepository: snsRepository, userLat: userLat, userLon: userLon);
               },
             ),
           ),
@@ -293,6 +270,60 @@ class _ListaPageState extends State<ListaPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class buildList extends StatelessWidget {
+  const buildList({
+    super.key,
+    required this.hospitais,
+    required this.snsRepository,
+    required this.userLat,
+    required this.userLon,
+  });
+
+  final List<Hospital> hospitais;
+  final SnsRepository snsRepository;
+  final double userLat;
+  final double userLon;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      key: Key("list-view"),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      itemCount: hospitais.length,
+      itemBuilder: (context, index) {
+        final hospital = hospitais[index];
+        final Color boxColor = index.isEven
+            ? Theme.of(context).colorScheme.primaryContainer
+            : Theme.of(context).colorScheme.secondaryContainer;
+
+        final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
+        final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+          child: HospitalBox(
+            hospital: hospital,
+            userLat: userLat,
+            userLon: userLon,
+            boxColor: boxColor,
+            estrelas: estrelas,
+            media: media,
+            onTap: () {
+              snsRepository.adicionarUltimoAcedido(hospital);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HospitalDetailPage(hospitalId: hospital.id),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

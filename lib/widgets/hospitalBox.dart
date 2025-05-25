@@ -96,7 +96,7 @@ Widget _hospitalListTile(BuildContext context, Hospital hospital, double userLat
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => HospitalDetailPage(hospital: hospital),
+          builder: (_) => HospitalDetailPage(hospitalId: hospital.id),
         ),
       );
     },
