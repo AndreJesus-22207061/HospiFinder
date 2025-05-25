@@ -21,14 +21,12 @@ class _MapaPageState extends State<MapaPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getLocalizacaoUpdates();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       body: _currentPos == null
           ? const Center(
