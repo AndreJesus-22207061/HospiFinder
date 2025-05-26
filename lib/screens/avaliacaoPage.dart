@@ -209,7 +209,9 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
 
 
   FormField<DateTime> _buildDateFormField() {
-    TextEditingController _controller = TextEditingController();
+    TextEditingController _controller = TextEditingController(
+      text: DateFormat('dd/MM/yyyy HH:mm').format(_selectedDate),
+    );
 
     return TestableFormField<DateTime>(
       key: Key('evaluation-datetime-field'),
@@ -223,6 +225,9 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
         if (value == null) {
           return 'Preenche uma data e hora válidas';
         }
+        if (value.isAfter(DateTime.now())) {
+          return 'Não é possível selecionar uma data futura.';
+        }
         return null;
       },
       onSaved: (value) {
@@ -231,37 +236,75 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
       builder: (field) {
         final borderColor = field.hasError ? Colors.red : Colors.blue;
 
-        return TextFormField(
-          style: TextStyle(color: Colors.black),
-          controller: _controller,
-          keyboardType: TextInputType.datetime,
-          decoration: InputDecoration(
-            labelText: 'Data e Hora', // Texto flutuante na borda
-            labelStyle: TextStyle(color: Colors.black),
-            hintText: 'dd/MM/yyyy HH:mm', // Hint dentro do campo
-            hintStyle: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
-            border: OutlineInputBorder(),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: borderColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: borderColor, width: 2),
-            ),
-            errorText: field.errorText,
-            contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-          ),
-          onChanged: (value) {
-            try {
-              final parsed = DateFormat('dd/MM/yyyy HH:mm').parseStrict(value);
-              field.didChange(parsed);
-            } catch (e) {
-              field.didChange(null); // marca como inválido
+        return GestureDetector(
+          onTap: () async {
+            final DateTime now = DateTime.now();
+
+            final DateTime? pickedDate = await showDatePicker(
+              context: context,
+              initialDate: _selectedDate,
+              firstDate: DateTime(2000),
+              lastDate: now, // Impede escolher datas futuras
+            );
+
+            if (pickedDate != null) {
+              final TimeOfDay? pickedTime = await showTimePicker(
+                context: context,
+                initialTime: TimeOfDay.fromDateTime(_selectedDate),
+              );
+
+              if (pickedTime != null) {
+                final selected = DateTime(
+                  pickedDate.year,
+                  pickedDate.month,
+                  pickedDate.day,
+                  pickedTime.hour,
+                  pickedTime.minute,
+                );
+
+                if (selected.isAfter(now)) {
+                  // Mostra erro se a combinação data/hora for futura
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Não é possível selecionar uma data futura."),
+                    ),
+                  );
+                  return;
+                }
+
+                field.didChange(selected);
+                _controller.text = DateFormat('dd/MM/yyyy HH:mm').format(selected);
+              }
             }
           },
+          child: AbsorbPointer(
+            child: TextFormField(
+              style: TextStyle(color: Colors.black),
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Data e Hora',
+                labelStyle: TextStyle(color: Colors.black),
+                hintText: 'dd/MM/yyyy HH:mm',
+                hintStyle: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                border: OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: borderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: borderColor, width: 2),
+                ),
+                errorText: field.errorText,
+                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                suffixIcon: Icon(Icons.calendar_today),
+              ),
+            ),
+          ),
         );
       },
     );
   }
+
+
 
 
 
