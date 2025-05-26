@@ -76,12 +76,34 @@ Widget _hospitalListTile(BuildContext context, Hospital hospital, double userLat
             ...estrelas,
           ],
         ),
-        SizedBox(height: 4),
-        _hospitalAddressText(context, hospital.district, hospital.address),
-        SizedBox(height: 4),
-        _hospitalKmText(context, hospital, userLat, userLon),
-        SizedBox(height: 4),
-        _hospitalUrgencyText(context, hospital.hasEmergency),
+        SizedBox(height: 6),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 2), // Espaço reduzido
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _hospitalKmText(context, hospital, userLat, userLon),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: hospital.hasEmergency ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    hospital.hasEmergency ? 'Com Urgência' : 'Sem Urgência',
+                    style: TextStyle(
+                      color: hospital.hasEmergency ? Colors.green : Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        )
       ],
     ),
     trailing: Icon(

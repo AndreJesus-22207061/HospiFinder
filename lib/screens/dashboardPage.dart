@@ -112,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
                   child: Text('Mais Próximos', style: Theme.of(context).textTheme.titleMedium),
                 ),
 
@@ -306,6 +306,7 @@ class _DashboardPageState extends State<DashboardPage> {
       key: key,
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(left: 0, right: 0, top: 2.0),
       itemCount: hospitais.length,
       itemBuilder: (context, index) {
         final hospital = hospitais[index];

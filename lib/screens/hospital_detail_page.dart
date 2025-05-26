@@ -46,7 +46,7 @@ class HospitalDetailPage extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(title: Text(hospital.name)),
             body: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -54,10 +54,7 @@ class HospitalDetailPage extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Theme
-                          .of(context)
-                          .colorScheme
-                          .primaryContainer,
+                      color: Theme.of(context).colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(15),
                       boxShadow: [
                         BoxShadow(
@@ -72,122 +69,199 @@ class HospitalDetailPage extends StatelessWidget {
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 20.0, right: 45.0, top: 16.0, bottom: 16.0),
+                      padding: const EdgeInsets.all(20.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 8),
-                          Text(hospital.name, style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(fontSize: 19)),
-                          SizedBox(height: 8),
-                          Text("Localização:", style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(fontSize: 15,
+                          // Nome
+                          Text(
+                            hospital.name,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black)),
-                          SizedBox(height: 8),
-                          Text(hospital.address, style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                              fontSize: 13, fontWeight: FontWeight.normal)),
-                          SizedBox(height: 8),
-                          Text(hospital.district, style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                              fontSize: 13, fontWeight: FontWeight.normal)),
-                          SizedBox(height: 8),
-                          Text("Contactos:", style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black)),
-                          SizedBox(height: 8),
-                          Text("${hospital.phoneNumber}", style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                              fontSize: 13, fontWeight: FontWeight.normal)),
-                          SizedBox(height: 8),
-                          Text(hospital.email, style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                              fontSize: 13, fontWeight: FontWeight.normal)),
-                          SizedBox(height: 8),
-                          Text(hospital.hasEmergency
-                              ? "Com Urgência"
-                              : "Sem Urgência", style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black)),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Text("Distancia:", style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black)),
-                              SizedBox(width: 5),
-                              Text(
-                                " ${hospital
-                                    .distanciaDe(userLat, userLon)
-                                    .toStringAsFixed(1)} km",
-                                style: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                    fontSize: 13, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                              color: Colors.white,
+                            ),
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(height: 16),
+
+                          // Morada | Distância
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Media Avaliações:", style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black)),
-                              SizedBox(width: 6),
-                              Text(
-                                media,
-                                style: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Morada",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      hospital.address,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 13,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              SizedBox(width: 6),
-                              ...estrelas,
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Distância",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      "${hospital.distanciaDe(userLat, userLon).toStringAsFixed(1)} km",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 14,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                          SizedBox(height: 8),
+                          SizedBox(height: 12),
+
+                          // Email | Telefone
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Email",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      hospital.email,
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Telefone",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      hospital.phoneNumber.toString(),
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 15,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
+
+                          // Urgência | Média avaliações
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Média de Avaliações",
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min, // o Row fica só do tamanho do conteúdo
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          media,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(width: 6),
+                                        ...estrelas,
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: hospital.hasEmergency
+                                            ? Colors.green.shade100
+                                            : Colors.red.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        hospital.hasEmergency
+                                            ? 'Com Urgência'
+                                            : 'Sem Urgência',
+                                        style: TextStyle(
+                                          color: hospital.hasEmergency
+                                              ? Colors.green
+                                              : Colors.red,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
