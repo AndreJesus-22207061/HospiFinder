@@ -38,7 +38,7 @@ final ColorScheme customColorScheme = ColorScheme(
 
 final TextTheme customTextTheme = GoogleFonts.oswaldTextTheme().copyWith(
   // === Texto Caixa Maior / Nome Hospital ===
-  bodyLarge: GoogleFonts.ptSans(fontSize: 17, color: AppColors.textoBranco , fontWeight: FontWeight.bold),
+  bodyLarge: GoogleFonts.ptSans(fontSize: 15, color: AppColors.textoBranco , fontWeight: FontWeight.bold),
   // === Texto Caixa Medio / localizão ===
   bodyMedium: GoogleFonts.ptSans(fontSize: 14, color: AppColors.textoBranco , fontWeight: FontWeight.normal),
   // === Texto Caixa Pequeno / Rating - Privado não Privado ===
