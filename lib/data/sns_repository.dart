@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:prjectcm/data/sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:flutter/material.dart';
@@ -15,11 +17,24 @@ class SnsRepository extends SnsDataSource {
 
   late SnsDataSource local;
   late SnsDataSource remote;
-
   late ConnectivityService connectivityService;
+  late LocationModule locationModule;
 
+  LocationData? _currentLocation;
 
-  SnsRepository(this.local, this.remote, this.connectivityService);
+  SnsRepository(
+      this.local,
+      this.remote,
+      this.connectivityService,
+      this.locationModule,
+      ) {
+    locationModule.onLocationChanged().listen((location) {
+      _currentLocation = location;
+    });
+  }
+
+  double get latitude => _currentLocation?.latitude ?? 0;
+  double get longitude => _currentLocation?.longitude ?? 0;
 
   List<Hospital> hospitalList = [];
   List<int> ultimosAcedidosIds = [];

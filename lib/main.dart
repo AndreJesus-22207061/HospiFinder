@@ -8,7 +8,9 @@ import 'package:prjectcm/theme.dart';
 import 'package:provider/provider.dart';
 
 import 'data/sqflite_sns_datasource.dart';
+import 'gps_location_module.dart';
 import 'http/http_client.dart';
+import 'location_module.dart';
 
 
 void main() async{
@@ -18,18 +20,22 @@ void main() async{
 
   final snsService = HttpSnsDataSource(client: HttpClient());
   final snsDataBase = SqfliteSnsDataSource();
+  final locationModule = GPSLocationModule();
 
   runApp(
     MultiProvider(
       providers: [
         Provider<HttpSnsDataSource>(create: (_) => snsService),
         Provider<SqfliteSnsDataSource>(create: (_) => snsDataBase),
+        Provider<LocationModule>(create: (_) => locationModule),
         Provider<SnsRepository>(
             create: (_) => SnsRepository(
                 snsService,
                 snsDataBase,
                 ConnectivityService(),
-            )),
+                locationModule,
+            ),
+        ),
       ],
       child: MyApp(),
     ),
