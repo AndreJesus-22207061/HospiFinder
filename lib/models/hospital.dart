@@ -66,4 +66,6 @@ class Hospital {
   double _grausParaRadianos(double graus) {
     return graus * pi / 180;
   }
+
+
 }
