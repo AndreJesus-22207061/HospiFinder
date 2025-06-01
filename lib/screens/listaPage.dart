@@ -313,7 +313,7 @@ class buildList extends StatelessWidget {
             estrelas: estrelas,
             media: media,
             onTap: () {
-              snsRepository.adicionarUltimoAcedido(hospital);
+              snsRepository.adicionarUltimoAcedido(hospital.id);
               Navigator.push(
                 context,
                 MaterialPageRoute(
