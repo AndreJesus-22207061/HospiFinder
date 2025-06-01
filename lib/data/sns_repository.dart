@@ -37,40 +37,23 @@ class SnsRepository extends SnsDataSource {
     );
 
     if (response.statusCode == 200){
-      final reposndeJSON = jsonDecode(response.body);
-      List hospitaisJSON = reposndeJSON['Result'];
-
-      List<Hospital> hospitais = hospitaisJSON.map((hospitalJSON) => Hospital.fromMap(hospitalJSON)).toList();
-
-      return hospitais;
+      final reponseJSON = jsonDecode(response.body);
+      List hospitaisJSON = reponseJSON['Result'];
+      return hospitaisJSON.map((hospitalJSON) => Hospital.fromMap(hospitalJSON)).toList();
     }else{
-      throw Exception('status code: ${response.statusCode}');
+      throw Exception('Erro ao obter hospitais:: ${response.statusCode}');
     }
   }
 
   @override
   Future<Hospital> getHospitalDetailById(int hospitalId) async {
-    final response = await _client.get(
-      url: 'https://servicos.min-saude.pt/pds/api/tems/institution/',
+    final allHospitals = await getAllHospitals();
+    final hospital = allHospitals.firstWhere(
+          (hospital) => hospital.id == hospitalId,
+      orElse: () => throw Exception('Hospital com ID $hospitalId não encontrado.'),
     );
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      final List hospitaisJSON = data['Result'];
-
-      final hospitalMap = hospitaisJSON.firstWhere(
-            (element) => element['Id'] == hospitalId,
-        orElse: () => null,
-      );
-
-      if (hospitalMap == null) {
-        throw Exception('Hospital com ID $hospitalId não encontrado.');
-      }
-
-      return Hospital.fromMap(hospitalMap);
-    } else {
-      throw Exception('Erro ao obter hospital: ${response.statusCode}');
-    }
+    return hospital;
   }
 
   @override
@@ -81,28 +64,18 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getHospitalsByName(String name) async {
-    final response = await _client.get(
-      url: 'https://servicos.min-saude.pt/pds/api/tems/institution/',
-    );
+    final allHospitals = await getAllHospitals();
+    final queryLower = name.toLowerCase();
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      final List hospitaisJSON = data['Result'];
+    final filtrado = allHospitals.where(
+          (hospital) => hospital.name.toLowerCase().contains(queryLower),
+    ).toList();
 
-      final hospitaisFiltrados = hospitaisJSON.where((element) {
-        final nomeHospital = (element['Name'] as String).toLowerCase();
-        return nomeHospital.contains(name.toLowerCase());
-      }).toList();
-
-      if (hospitaisFiltrados.isEmpty) {
-        throw Exception('Nenhum hospital encontrado com nome contendo "$name".');
-      }
-
-      // Converter para List<Hospital>
-      return hospitaisFiltrados.map<Hospital>((e) => Hospital.fromMap(e)).toList();
-    } else {
-      throw Exception('Erro ao obter hospitais: ${response.statusCode}');
+    if (filtrado.isEmpty) {
+      throw Exception('Nenhum hospital encontrado com nome contendo "$name".');
     }
+
+    return filtrado;
   }
 
   @override
@@ -111,12 +84,6 @@ class SnsRepository extends SnsDataSource {
     throw UnimplementedError();
   }
 
-
-
-  void atualizarLocalizacao(double novaLat, double novaLon) {
-    _latitude = novaLat;
-    _longitude = novaLon;
-  }
 
   void adicionarUltimoAcedido(int hospitalId) {
     if (!ultimosAcedidosIds.contains(hospitalId)) {
@@ -157,14 +124,7 @@ class SnsRepository extends SnsDataSource {
     return copia.map((e) => e.key).toList();
   }
 
-  List<Hospital> pesquisarHospitais(List<Hospital> lista, String query) {
-    final lowerQuery = query.toLowerCase();
-    return lista.where((hospital) => hospital.name.toLowerCase().contains(lowerQuery)).toList();
-  }
 
-  List<Hospital> listarHospitais(){
-    return hospitalList;
-  }
 
   void addAvaliacao(EvaluationReport avaliacao, Hospital hospital1){
     hospital1.avaliacoes.add(avaliacao);
@@ -193,13 +153,13 @@ class SnsRepository extends SnsDataSource {
     return copia;
   }
 
-  List<Widget> gerarEstrelasParaHospital(Hospital hospital, {double size = 20}) {
-    double media = mediaAvaliacoes(hospital);
+
+
+  List<Widget> _gerarEstrelas(double rating, {double size = 20}) {
     final List<Widget> stars = [];
-    final rounded = (media * 2).round() / 2;
+    final rounded = (rating * 2).round() / 2;
     final fullStars = rounded.floor();
     final hasHalfStar = (rounded - fullStars) == 0.5;
-
 
     for (int i = 0; i < 5; i++) {
       if (i < fullStars) {
@@ -214,24 +174,14 @@ class SnsRepository extends SnsDataSource {
     return stars;
   }
 
+
+  List<Widget> gerarEstrelasParaHospital(Hospital hospital, {double size = 20}) {
+    double media = mediaAvaliacoes(hospital);
+    return _gerarEstrelas(media, size: size);
+  }
+
   List<Widget> gerarEstrelasParaAvaliacao(EvaluationReport avaliacao, {double size = 20}) {
-    final List<Widget> stars = [];
-    final rounded = (avaliacao.rating * 2).round() / 2;
-    final fullStars = rounded.floor();
-    final hasHalfStar = (rounded - fullStars) == 0.5;
-
-
-    for (int i = 0; i < 5; i++) {
-      if (i < fullStars) {
-        stars.add(Icon(Icons.star, color: Colors.white, size: size));
-      } else if (i == fullStars && hasHalfStar) {
-        stars.add(Icon(Icons.star_half, color: Colors.white, size: size));
-      } else {
-        stars.add(Icon(Icons.star_border, color: Colors.white, size: size));
-      }
-    }
-
-    return stars;
+    return _gerarEstrelas(avaliacao.rating as double, size: size);
   }
 
 

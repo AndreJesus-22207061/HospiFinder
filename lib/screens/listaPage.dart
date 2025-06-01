@@ -56,8 +56,12 @@ class _ListaPageState extends State<ListaPage> {
     }
 
     if (_searchQuery.isNotEmpty) {
-      hospitais = snsRepository.pesquisarHospitais(hospitais, _searchQuery);
+      final lowerQuery = _searchQuery.toLowerCase();
+      hospitais = hospitais.where((hospital) => hospital.name.toLowerCase().contains(lowerQuery)).toList();
     }
+
+
+
 
     return hospitais;
   }

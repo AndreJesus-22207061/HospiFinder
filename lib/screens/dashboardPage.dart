@@ -65,10 +65,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
             final userLat = snsRepository.latitude;
             final userLon = snsRepository.longitude;
-            final hospitaisMaisProximos = List<Hospital>.from(todosHospitais);
-            hospitaisMaisProximos.sort((a, b) =>
-                a.distanciaDe(userLat, userLon).compareTo(b.distanciaDe(userLat, userLon))
-            );
+            final hospitaisMaisProximos = snsRepository.ordenarListaPorDistancia(todosHospitais, userLat, userLon);
             final hospitaisMaisProximosTop3 = hospitaisMaisProximos.take(3).toList();
 
 
