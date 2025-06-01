@@ -6,23 +6,24 @@ import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:flutter/material.dart';
 import 'package:prjectcm/models/waiting_time.dart';
+import 'package:prjectcm/service/connectivity_service.dart';
 
 import '../http/http_client.dart';
 
 
 class SnsRepository extends SnsDataSource {
 
-  final HttpClient _client;
+  late SnsDataSource local;
+  late SnsDataSource remote;
 
-  SnsRepository({required HttpClient client}) : _client = client;
+  late ConnectivityService connectivityService;
+
+
+  SnsRepository(this.local, this.remote, this.connectivityService);
 
   List<Hospital> hospitalList = [];
-  double _latitude = 0.0;
-  double _longitude = 0.0;
   List<int> ultimosAcedidosIds = [];
 
-  double get latitude => _latitude;
-  double get longitude => _longitude;
 
   @override
   Future<void> attachEvaluation(int hospitalId, EvaluationReport report) {
@@ -32,28 +33,20 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getAllHospitals() async {
-    final response = await _client.get(
-      url: 'https://servicos.min-saude.pt/pds/api/tems/institution',
-    );
-
-    if (response.statusCode == 200){
-      final reponseJSON = jsonDecode(response.body);
-      List hospitaisJSON = reponseJSON['Result'];
-      return hospitaisJSON.map((hospitalJSON) => Hospital.fromMap(hospitalJSON)).toList();
+    if(await connectivityService.checkConnectivity()){
+      return remote.getAllHospitals();
     }else{
-      throw Exception('Erro ao obter hospitais:: ${response.statusCode}');
+      return local.getAllHospitals();
     }
   }
 
   @override
   Future<Hospital> getHospitalDetailById(int hospitalId) async {
-    final allHospitals = await getAllHospitals();
-    final hospital = allHospitals.firstWhere(
-          (hospital) => hospital.id == hospitalId,
-      orElse: () => throw Exception('Hospital com ID $hospitalId não encontrado.'),
-    );
-
-    return hospital;
+    if(await connectivityService.checkConnectivity()){
+      return remote.getHospitalDetailById(hospitalId);
+    }else{
+      return local.getHospitalDetailById(hospitalId);
+    }
   }
 
   @override
@@ -64,24 +57,16 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getHospitalsByName(String name) async {
-    final allHospitals = await getAllHospitals();
-    final queryLower = name.toLowerCase();
-
-    final filtrado = allHospitals.where(
-          (hospital) => hospital.name.toLowerCase().contains(queryLower),
-    ).toList();
-
-    if (filtrado.isEmpty) {
-      throw Exception('Nenhum hospital encontrado com nome contendo "$name".');
+    if(await connectivityService.checkConnectivity()){
+      return remote.getHospitalsByName(name);
+    }else{
+      return local.getHospitalsByName(name);
     }
-
-    return filtrado;
   }
 
   @override
   Future<void> insertHospital(Hospital hospital) {
-    // TODO: implement insertHospital
-    throw UnimplementedError();
+    throw Exception('Not available');
   }
 
 

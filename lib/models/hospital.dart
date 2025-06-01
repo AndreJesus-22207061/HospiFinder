@@ -27,19 +27,49 @@ class Hospital {
       }) : avaliacoes = avaliacoes ?? [];
 
 
-  factory Hospital.fromMap(Map<String, dynamic> map){
+  factory Hospital.fromJSON(Map<String, dynamic> json){
     return Hospital(
-      id: map['Id'] ?? 0,
-      name: map['Name'] ?? 'Sem nome',
-      latitude: (map['Latitude'] ?? 0.0).toDouble(),
-      longitude: (map['Longitude'] ?? 0.0).toDouble(),
-      address: map['Address'] ?? 'Sem morada',
-      phoneNumber: map['Phone'] ?? 0,
-      email: map['Email'] ?? 'sem@email.pt',
-      district: map['District'] ?? 'Desconhecido',
-      hasEmergency: map['HasEmergency'] ?? false,
+      id: json['Id'] ?? 0,
+      name: json['Name'] ?? 'Sem nome',
+      latitude: (json['Latitude'] ?? 0.0).toDouble(),
+      longitude: (json['Longitude'] ?? 0.0).toDouble(),
+      address: json['Address'] ?? 'Sem morada',
+      phoneNumber: json['Phone'] ?? 0,
+      email: json['Email'] ?? 'sem@email.pt',
+      district: json['District'] ?? 'Desconhecido',
+      hasEmergency: json['HasEmergency'] ?? false,
     );
   }
+
+  factory Hospital.fromDB(Map<String, dynamic> db){
+    return Hospital(
+      id: db['id'] ?? 0,
+      name: db['name'] ?? 'Sem nome',
+      latitude: (db['latitude'] ?? 0.0).toDouble(),
+      longitude: (db['longitude'] ?? 0.0).toDouble(),
+      address: db['address'] ?? 'Sem morada',
+      phoneNumber: db['phoneNumber'] ?? 0,
+      email: db['email'] ?? 'sem@email.pt',
+      district: db['district'] ?? 'Desconhecido',
+      hasEmergency: db['hasEmergency'] ?? false,
+    );
+  }
+
+
+  Map<String, dynamic> toDb() {
+    return{
+      'id': id,
+      'name': name,
+      'latitude': latitude,
+      'longitude': longitude,
+      'address': address,
+      'phoneNumber': phoneNumber,
+      'email': email,
+      'district': district,
+      'hasEmergency': hasEmergency,
+    };
+  }
+
 
   double distanciaDe(double minhaLat , double minhaLon){
     const R = 6371; // raio da Terra em km

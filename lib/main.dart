@@ -1,36 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
 import 'package:prjectcm/data/sns_repository.dart';
 import 'package:prjectcm/main_screen.dart';
 import 'package:prjectcm/models/hospital.dart';
+import 'package:prjectcm/service/connectivity_service.dart';
 import 'package:prjectcm/theme.dart';
 import 'package:provider/provider.dart';
 
+import 'data/sqflite_sns_datasource.dart';
 import 'http/http_client.dart';
 
 
-void main() {
+void main() async{
+//  WidgetsFlutterBinding.ensureInitialized();
+  //final db = SqfliteSnsDataSource();
+  //await db.apagarBaseDeDados();
+
+  final snsService = HttpSnsDataSource(client: HttpClient());
+  final snsDataBase = SqfliteSnsDataSource();
+
   runApp(
     MultiProvider(
       providers: [
-        Provider(
-          create: (_) => SnsRepository(client: HttpClient()),
-        ),
+        Provider<HttpSnsDataSource>(create: (_) => snsService),
+        Provider<SqfliteSnsDataSource>(create: (_) => snsDataBase),
+        Provider<SnsRepository>(
+            create: (_) => SnsRepository(
+                snsService,
+                snsDataBase,
+                ConnectivityService(),
+            )),
       ],
       child: MyApp(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
 
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: MainPage(),
-      theme: themeLight(),
+    final hospitalDatabase = context.read<SqfliteSnsDataSource>();
+
+    return FutureBuilder(
+        future: hospitalDatabase.init(),
+        builder: (_, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done){
+            return MaterialApp(
+              home: MainPage(),
+              theme: themeLight(),
+            );
+          }
+          else{
+            return MaterialApp(
+              home: Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+          }
+        },
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prjectcm/data/sns_repository.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:provider/provider.dart';
 import 'package:prjectcm/widgets/hospitalBox.dart';
@@ -159,6 +160,7 @@ class _ListaPageState extends State<ListaPage> {
   @override
   Widget build(BuildContext context) {
     final snsRepository = context.read<SnsRepository>();
+    final database = context.read<SqfliteSnsDataSource>();
     final userLat = snsRepository.latitude;
     final userLon = snsRepository.longitude;
 

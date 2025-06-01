@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ class HospitalDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
   //  final theme = Theme.of(context);
     final snsRepository = context.read<SnsRepository>();
+
     final userLat = snsRepository.latitude;
     final userLon = snsRepository.longitude;
 
