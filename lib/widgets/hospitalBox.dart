@@ -113,7 +113,7 @@ Widget _hospitalListTile(BuildContext context, Hospital hospital, double userLat
     ),
     onTap: () {
       final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-      snsRepository.adicionarUltimoAcedido(hospital); // Atualiza os últimos acessados
+      snsRepository.adicionarUltimoAcedido(hospital.id); // Atualiza os últimos acessados
 
       Navigator.push(
         context,

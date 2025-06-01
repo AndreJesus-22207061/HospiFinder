@@ -65,7 +65,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
             final userLat = snsRepository.latitude;
             final userLon = snsRepository.longitude;
-            final ultimosAcedidos = snsRepository.listarUltimosAcedidos();
             final hospitaisMaisProximos = List<Hospital>.from(todosHospitais);
             hospitaisMaisProximos.sort((a, b) =>
                 a.distanciaDe(userLat, userLon).compareTo(b.distanciaDe(userLat, userLon))
@@ -84,33 +83,58 @@ class _DashboardPageState extends State<DashboardPage> {
                 // Barra de pesquisa
                 buildSearchBar(context),
                 // Resultados da pesquisa
-                if (_searchQuery.isNotEmpty) buildSearchResults(context,hospitaisFiltrados, userLat, userLon),
+                if (_searchQuery.isNotEmpty)
+                  buildSearchResults(context,hospitaisFiltrados, userLat, userLon),
 
                 // Últimos acedidos
-                if (ultimosAcedidos.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Últimos Acedidos', style: Theme.of(context).textTheme.titleMedium),
-                        tuturialButton(
-                          context: context,
-                          onPressed: () => setState(() {}),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (ultimosAcedidos.isNotEmpty)
-                  buildHospitalList(
-                    context: context,
-                    hospitais: ultimosAcedidos,
-                    userLat: userLat,
-                    userLon: userLon,
-                    snsRepository: snsRepository,
-                    key: Key("last-visited-key"),
-                  ),
+                if (_searchQuery.isEmpty)
+                  FutureBuilder<List<Hospital>>(
+                    future: snsRepository.listarUltimosAcedidos(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Center(child: Text('Erro ao carregar últimos acedidos')),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return SizedBox();
+                      }
 
+                      final ultimosAcedidos = snapshot.data!;
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Últimos Acedidos', style: Theme.of(context).textTheme.titleMedium),
+                                tuturialButton(
+                                  context: context,
+                                  onPressed: () => setState(() {}),
+                                ),
+                              ],
+                            ),
+                          ),
+                          buildHospitalList(
+                            context: context,
+                            hospitais: ultimosAcedidos,
+                            userLat: userLat,
+                            userLon: userLon,
+                            snsRepository: snsRepository,
+                            key: Key("last-visited-key"),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
                   child: Text('Mais Próximos', style: Theme.of(context).textTheme.titleMedium),
@@ -241,7 +265,7 @@ class _DashboardPageState extends State<DashboardPage> {
             return GestureDetector(
               onTap: () {
                 final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-                snsRepository.adicionarUltimoAcedido(hospital);
+                snsRepository.adicionarUltimoAcedido(hospital.id);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -326,7 +350,7 @@ class _DashboardPageState extends State<DashboardPage> {
             estrelas: estrelas,
             media: media,
             onTap: () {
-              snsRepository.adicionarUltimoAcedido(hospital);
+              snsRepository.adicionarUltimoAcedido(hospital.id);
               Navigator.push(
                 context,
                 MaterialPageRoute(
