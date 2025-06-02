@@ -59,6 +59,22 @@ class SnsRepository extends SnsDataSource {
     }
   }
 
+  Future<List<EvaluationReport>> getEvaluationsByHospitalId(int hospitalId) async {
+    final db = local.database;
+
+    if (db == null) {
+      throw Exception('Base de dados local não inicializada');
+    }
+
+    final result = await db.rawQuery(
+      'SELECT * FROM avaliacao WHERE hospitalId = ?',
+      [hospitalId.toString()],
+    );
+
+    return result.map((map) => EvaluationReport.fromDb(map)).toList();
+  }
+
+
   @override
   Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) {
     // TODO: implement getHospitalWaitingTimes
@@ -73,6 +89,7 @@ class SnsRepository extends SnsDataSource {
       return await local.getHospitalsByName(name);
     }
   }
+
 
   @override
   Future<void> insertHospital(Hospital hospital) {

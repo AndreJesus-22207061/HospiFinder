@@ -391,7 +391,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
       );
 
       final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-      snsRepository.local.insertAvaliacao(novaAvaliacao);
+      snsRepository.local.attachEvaluation(_selectedHospital!.id,novaAvaliacao);
 
       setState(() {
         _submitSucesso = true;

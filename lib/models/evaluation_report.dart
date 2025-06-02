@@ -25,4 +25,17 @@ class EvaluationReport {
     };
   }
 
+
+  factory EvaluationReport.fromDb(Map<String, dynamic> map) {
+    return EvaluationReport(
+      id: map['id'] as String,
+      hospitalId: int.parse(map['hospitalId'].toString()), // pode vir como String
+      rating: map['rating'] as int,
+      dataHora: DateTime.parse(map['date'].toString()),
+      notas: map['notes'] as String?,
+    );
+  }
+
+
+
 }
