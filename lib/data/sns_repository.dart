@@ -26,9 +26,8 @@ class SnsRepository extends SnsDataSource {
 
 
   @override
-  Future<void> attachEvaluation(int hospitalId, EvaluationReport report) {
-    // TODO: implement attachEvaluation
-    throw UnimplementedError();
+  Future<void> attachEvaluation(int hospitalId, EvaluationReport report) async {
+    await local.attachEvaluation(hospitalId, report);
   }
 
   @override
@@ -59,22 +58,6 @@ class SnsRepository extends SnsDataSource {
     }
   }
 
-  Future<List<EvaluationReport>> getEvaluationsByHospitalId(int hospitalId) async {
-    final db = local.database;
-
-    if (db == null) {
-      throw Exception('Base de dados local não inicializada');
-    }
-
-    final result = await db.rawQuery(
-      'SELECT * FROM avaliacao WHERE hospitalId = ?',
-      [hospitalId.toString()],
-    );
-
-    return result.map((map) => EvaluationReport.fromDb(map)).toList();
-  }
-
-
   @override
   Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) {
     // TODO: implement getHospitalWaitingTimes
@@ -94,6 +77,21 @@ class SnsRepository extends SnsDataSource {
   @override
   Future<void> insertHospital(Hospital hospital) {
     throw Exception('Not available');
+  }
+
+  Future<List<EvaluationReport>> getEvaluationsByHospitalId(int hospitalId) async {
+    final db = local.database;
+
+    if (db == null) {
+      throw Exception('Base de dados local não inicializada');
+    }
+
+    final result = await db.rawQuery(
+      'SELECT * FROM avaliacao WHERE hospitalId = ?',
+      [hospitalId.toString()],
+    );
+
+    return result.map((map) => EvaluationReport.fromDb(map)).toList();
   }
 
 

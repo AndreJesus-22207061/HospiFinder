@@ -11,7 +11,7 @@ class Hospital {
   final String email;
   final String district;
   final bool hasEmergency;
-  final List<EvaluationReport> avaliacoes;
+  List<EvaluationReport> avaliacoes;
 
   Hospital(
       {required this.id,
@@ -51,7 +51,7 @@ class Hospital {
       phoneNumber: db['phoneNumber'] ?? 0,
       email: db['email'] ?? 'sem@email.pt',
       district: db['district'] ?? 'Desconhecido',
-      hasEmergency: db['hasEmergency'] ?? false,
+      hasEmergency: (db['hasEmergency'] ?? 0) == 1,
     );
   }
 
@@ -66,9 +66,11 @@ class Hospital {
       'phoneNumber': phoneNumber,
       'email': email,
       'district': district,
-      'hasEmergency': hasEmergency,
+      'hasEmergency': hasEmergency ? 1 : 0,
     };
   }
+
+
 
 
   double distanciaDe(double minhaLat , double minhaLon){

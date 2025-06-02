@@ -14,13 +14,14 @@ import 'location_module.dart';
 
 
 void main() async{
-//  WidgetsFlutterBinding.ensureInitialized();
-  //final db = SqfliteSnsDataSource();
-  //await db.apagarBaseDeDados();
+
+  WidgetsFlutterBinding.ensureInitialized();
 
   final snsService = HttpSnsDataSource(client: HttpClient());
   final snsDataBase = SqfliteSnsDataSource();
   final locationModule = GPSLocationModule();
+
+  await snsDataBase.apagarBaseDeDados();
 
   runApp(
     MultiProvider(

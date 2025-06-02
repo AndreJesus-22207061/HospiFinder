@@ -16,22 +16,21 @@ class EvaluationReport {
 
 
   Map<String, dynamic> toDb() {
-    return{
+    return {
       'id': id,
       'hospitalId': hospitalId,
       'rating': rating,
-      'date' : dataHora,
-      'notes': notas
+      'date': dataHora.toIso8601String(),  // converte para string ISO8601
+      'notes': notas,
     };
   }
-
 
   factory EvaluationReport.fromDb(Map<String, dynamic> map) {
     return EvaluationReport(
       id: map['id'] as String,
-      hospitalId: int.parse(map['hospitalId'].toString()), // pode vir como String
+      hospitalId: int.parse(map['hospitalId'].toString()),
       rating: map['rating'] as int,
-      dataHora: DateTime.parse(map['date'].toString()),
+      dataHora: DateTime.parse(map['date'] as String),
       notas: map['notes'] as String?,
     );
   }

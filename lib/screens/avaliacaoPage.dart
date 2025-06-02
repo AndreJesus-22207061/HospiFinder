@@ -379,7 +379,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
 
 
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final novaAvaliacao = EvaluationReport(
@@ -391,7 +391,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
       );
 
       final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-      snsRepository.local.attachEvaluation(_selectedHospital!.id,novaAvaliacao);
+      await snsRepository.attachEvaluation(_selectedHospital!.id,novaAvaliacao);
 
       setState(() {
         _submitSucesso = true;

@@ -27,19 +27,19 @@ class SqfliteSnsDataSource extends SnsDataSource {
               'hasEmergency INTEGER '
               ')',
         );
+        print('Tabela hospital criada');
 
         await db.execute(
-            '''
-        CREATE TABLE avaliacao (
-          id TEXT PRIMARY KEY,
-          hospitalId TEXT NOT NULL,
-          rating INTEGER NOT NULL,
-          date DATETIME NOT NULL,
-          notes TEXT,
-          FOREIGN KEY (hospitalId) REFERENCES hospital(id)
-        )
-        '''
+            'CREATE TABLE avaliacao('
+                'id TEXT PRIMARY KEY,'
+                'hospitalId TEXT NOT NULL,'
+                'rating INTEGER NOT NULL,'
+                'date DATETIME NOT NULL,'
+                'notes TEXT,'
+                'FOREIGN KEY (hospitalId) REFERENCES hospital(id)'
+                ')'
         );
+        print('Tabela avaliacao criada');
       },
       version: 1,
     );
@@ -50,11 +50,16 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
 
   @override
-  Future<void> attachEvaluation(int hospitalId, EvaluationReport report) async{
-    if(database == null){
+  Future<void> attachEvaluation(int hospitalId, EvaluationReport report) async {
+    if (database == null) {
       throw Exception('Forgot to initialize the database?');
     }
-    await database!.insert('avaliacao' , report.toDb());
+    try {
+      await database!.insert('avaliacao', report.toDb());
+    } catch (e) {
+      print('Erro ao inserir avaliação: $e');
+      rethrow;
+    }
   }
 
   @override

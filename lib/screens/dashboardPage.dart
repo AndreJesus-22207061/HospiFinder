@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/sns_repository.dart';
+import '../models/evaluation_report.dart';
 import '../models/hospital.dart';
 import 'package:prjectcm/widgets/hospitalBox.dart';
 
@@ -37,7 +38,8 @@ class _DashboardPageState extends State<DashboardPage> {
     final snsRepository = Provider.of<SnsRepository>(context, listen: false);
 
     // Obter localização (aguarda o primeiro valor do stream)
-    final locationData = await snsRepository.locationModule.onLocationChanged().first;
+    final locationData =
+        await snsRepository.locationModule.onLocationChanged().first;
     final userLat = locationData.latitude;
     final userLon = locationData.longitude;
 
@@ -50,7 +52,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // Obter últimos acedidos
     final ultimosAcedidos = await snsRepository.listarUltimosAcedidos();
-
 
     return {
       'userLat': userLat,
@@ -89,7 +90,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 } else if (snapshot.hasError) {
                   return Padding(
                     padding: const EdgeInsets.all(20),
-                    child: Center(child: Text('Erro ao carregar dados: ${snapshot.error}')),
+                    child: Center(
+                        child:
+                            Text('Erro ao carregar dados: ${snapshot.error}')),
                   );
                 } else if (!snapshot.hasData) {
                   return Padding(
@@ -100,29 +103,34 @@ class _DashboardPageState extends State<DashboardPage> {
 
                 final userLat = snapshot.data!['userLat'] as double;
                 final userLon = snapshot.data!['userLon'] as double;
-                final todosHospitais = snapshot.data!['hospitais'] as List<Hospital>;
-                final ultimosAcedidos = snapshot.data!['ultimosAcedidos'] as List<Hospital>;
+                final todosHospitais =
+                    snapshot.data!['hospitais'] as List<Hospital>;
+                final ultimosAcedidos =
+                    snapshot.data!['ultimosAcedidos'] as List<Hospital>;
 
                 final hospitaisFiltrados = _searchQuery.isEmpty
                     ? todosHospitais
                     : todosHospitais
-                    .where((hospital) => hospital.name
-                    .toLowerCase()
-                    .contains(_searchQuery.toLowerCase()))
-                    .toList();
+                        .where((hospital) => hospital.name
+                            .toLowerCase()
+                            .contains(_searchQuery.toLowerCase()))
+                        .toList();
 
-                final hospitaisMaisProximos =
-                snsRepository.ordenarListaPorDistancia(todosHospitais, userLat, userLon);
-                final hospitaisMaisProximosTop3 = hospitaisMaisProximos.take(3).toList();
+                final hospitaisMaisProximos = snsRepository
+                    .ordenarListaPorDistancia(todosHospitais, userLat, userLon);
+                final hospitaisMaisProximosTop3 =
+                    hospitaisMaisProximos.take(3).toList();
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (_searchQuery.isNotEmpty)
-                      buildSearchResults(context, hospitaisFiltrados, userLat, userLon),
+                      buildSearchResults(
+                          context, hospitaisFiltrados, userLat, userLon),
                     if (_searchQuery.isEmpty) ...[
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 8),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -145,7 +153,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ],
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 1),
                       child: Text('Mais Próximos',
                           style: Theme.of(context).textTheme.titleMedium),
                     ),
@@ -195,7 +204,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget buildCabecalho (BuildContext context){
+  Widget buildCabecalho(BuildContext context) {
     print('[DEBUG] Desenhei o cabeçalho');
     return Padding(
       padding: const EdgeInsets.only(left: 22.0, right: 24.0, top: 32.0),
@@ -206,7 +215,8 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Bem vindo ao HospiFinder', style: Theme.of(context).textTheme.titleLarge),
+                Text('Bem vindo ao HospiFinder',
+                    style: Theme.of(context).textTheme.titleLarge),
                 SizedBox(height: 2),
                 Container(
                   padding: EdgeInsets.all(1),
@@ -224,7 +234,8 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
           SizedBox(width: 2),
-          Image.asset('assets/images/HospifinderSemFundo.png', width: 70, height: 70),
+          Image.asset('assets/images/HospifinderSemFundo.png',
+              width: 70, height: 70),
         ],
       ),
     );
@@ -256,7 +267,8 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget buildSearchResults(BuildContext context, List<Hospital> hospitaisFiltrados, double userLat, double userLon) {
+  Widget buildSearchResults(BuildContext context,
+      List<Hospital> hospitaisFiltrados, double userLat, double userLon) {
     print('[DEBUG] Desenhei os resultados da pesquisa');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -275,7 +287,8 @@ class _DashboardPageState extends State<DashboardPage> {
             final distancia = hospital.distanciaDe(userLat, userLon);
             return GestureDetector(
               onTap: () {
-                final snsRepository = Provider.of<SnsRepository>(context, listen: false);
+                final snsRepository =
+                    Provider.of<SnsRepository>(context, listen: false);
                 snsRepository.adicionarUltimoAcedido(hospital.id);
                 Navigator.push(
                   context,
@@ -294,8 +307,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     bottom: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
-                child:
-                Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(
@@ -327,7 +339,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-
   Widget buildHospitalList({
     required BuildContext context,
     required List<Hospital> hospitais,
@@ -338,44 +349,70 @@ class _DashboardPageState extends State<DashboardPage> {
   }) {
     print('[DEBUG] Desenhei lista de hospitais com ${hospitais.length} itens');
     return ListView.builder(
-      key: key,
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.only(left: 0, right: 0, top: 2.0),
-      itemCount: hospitais.length,
-      itemBuilder: (context, index) {
-        final hospital = hospitais[index];
-        final Color boxColor = index.isEven
-            ? Theme.of(context).colorScheme.primaryContainer
-            : Theme.of(context).colorScheme.secondaryContainer;
-        final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
-        final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+        key: key,
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(left: 0, right: 0, top: 2.0),
+        itemCount: hospitais.length,
+        itemBuilder: (context, index) {
+          final hospital = hospitais[index];
+          final Color boxColor = index.isEven
+              ? Theme.of(context).colorScheme.primaryContainer
+              : Theme.of(context).colorScheme.secondaryContainer;
+          final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
+          final media =
+              snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
-          child: HospitalBox(
-            hospital: hospital,
-            userLat: userLat,
-            userLon: userLon,
-            boxColor: boxColor,
-            estrelas: estrelas,
-            media: media,
-            onTap: () {
-              snsRepository.adicionarUltimoAcedido(hospital.id);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => HospitalDetailPage(hospitalId: hospital.id),
+          return FutureBuilder<List<EvaluationReport>>(
+            future: snsRepository.getEvaluationsByHospitalId(hospital.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: SizedBox(
+                    height: 100,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Text('Erro ao carregar avaliações'),
+                );
+              }
+
+              // Attach avaliações dinamicamente
+              hospital.avaliacoes = snapshot.data ?? [];
+
+              final estrelas =
+                  snsRepository.gerarEstrelasParaHospital(hospital);
+              final media =
+                  snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+
+              return Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+                child: HospitalBox(
+                  hospital: hospital,
+                  userLat: userLat,
+                  userLon: userLon,
+                  boxColor: boxColor,
+                  estrelas: estrelas,
+                  media: media,
+                  onTap: () {
+                    snsRepository.adicionarUltimoAcedido(hospital.id);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            HospitalDetailPage(hospitalId: hospital.id),
+                      ),
+                    ).then((_) => setState(() {}));
+                  },
                 ),
-              ).then((_) => setState(() {}));
+              );
             },
-          ),
-        );
-      },
-    );
+          );
+        });
   }
 }
-
-
-
-
