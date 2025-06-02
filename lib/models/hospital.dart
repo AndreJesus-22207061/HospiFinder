@@ -79,15 +79,13 @@ class Hospital {
     final dLon = _grausParaRadianos(longitude - minhaLon);
 
     // Fórmula de Haversine:
-    // ( a ) representa o quadrado do semiverso do ângulo central entre os dois pontos
+
     final a = sin(dLat / 2) * sin(dLat / 2) +
         cos(_grausParaRadianos(minhaLat)) * cos(_grausParaRadianos(latitude)) *
             sin(dLon / 2) * sin(dLon / 2);
 
-    // ( c ) é o ângulo central em radianos (distância angular)
     final c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
-    // Distância final = raio da Terra * ângulo central
     final distancia = R * c;
 
     return distancia;

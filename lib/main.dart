@@ -30,8 +30,8 @@ void main() async{
         Provider<LocationModule>(create: (_) => locationModule),
         Provider<SnsRepository>(
             create: (_) => SnsRepository(
-                snsService,
                 snsDataBase,
+                snsService,
                 ConnectivityService(),
                 locationModule,
             ),

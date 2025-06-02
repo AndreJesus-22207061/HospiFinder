@@ -13,7 +13,6 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  late Future<List<Hospital>> _futureHospitais;
   String _searchQuery = '';
   late TextEditingController _searchController;
   late FocusNode _focusNode;
@@ -23,8 +22,6 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _searchController = TextEditingController();
     _focusNode = FocusNode();
-    final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-    _futureHospitais = snsRepository.getAllHospitals();
   }
 
   @override
@@ -34,10 +31,37 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
+  Future<Map<String, dynamic>> _loadAllData() async {
+    final snsRepository = Provider.of<SnsRepository>(context, listen: false);
+
+    // Obter localização (aguarda o primeiro valor do stream)
+    final locationData = await snsRepository.locationModule.onLocationChanged().first;
+    final userLat = locationData.latitude;
+    final userLon = locationData.longitude;
+
+    if (userLat == null || userLon == null) {
+      throw Exception('Localização inválida');
+    }
+
+    // Obter hospitais
+    final hospitais = await snsRepository.getAllHospitals();
+
+    // Obter últimos acedidos
+    final ultimosAcedidos = await snsRepository.listarUltimosAcedidos();
+
+
+    return {
+      'userLat': userLat,
+      'userLon': userLon,
+      'hospitais': hospitais,
+      'ultimosAcedidos': ultimosAcedidos,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-    print('build() iniciado');
+
     return GestureDetector(
       onTap: () {
         _focusNode.unfocus();
@@ -47,96 +71,70 @@ class _DashboardPageState extends State<DashboardPage> {
         });
       },
       child: Scaffold(
-        body: FutureBuilder<List<Hospital>>(
-          future: _futureHospitais,
+        body: FutureBuilder<Map<String, dynamic>>(
+          future: _loadAllData(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text('Erro ao carregar hospitais'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('Nenhum hospital disponível'));
+              return Center(child: Text('Erro ao carregar dados: ${snapshot.error}'));
+            } else if (!snapshot.hasData) {
+              return Center(child: Text('Dados indisponíveis'));
             }
 
-            final todosHospitais = snapshot.data!;
+            final userLat = snapshot.data!['userLat'] as double;
+            final userLon = snapshot.data!['userLon'] as double;
+            final todosHospitais = snapshot.data!['hospitais'] as List<Hospital>;
+            final ultimosAcedidos = snapshot.data!['ultimosAcedidos'] as List<Hospital>;
+
             final hospitaisFiltrados = _searchQuery.isEmpty
                 ? todosHospitais
-                : todosHospitais.where((hospital) => hospital.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+                : todosHospitais
+                .where((hospital) =>
+                hospital.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+                .toList();
 
-            final userLat = snsRepository.latitude;
-            final userLon = snsRepository.longitude;
-            final hospitaisMaisProximos = snsRepository.ordenarListaPorDistancia(todosHospitais, userLat, userLon);
+            final hospitaisMaisProximos =
+            snsRepository.ordenarListaPorDistancia(todosHospitais, userLat, userLon);
             final hospitaisMaisProximosTop3 = hospitaisMaisProximos.take(3).toList();
 
-
-            print('Dados carregados com sucesso');
-            print('Total hospitais carregados: ${todosHospitais.length}');
+            print('[DEBUG] ultimosAcedidos: ${ultimosAcedidos.length}');
+            print('[DEBUG] maisProximosTop3: ${hospitaisMaisProximosTop3.length}');
 
             return ListView(
               padding: EdgeInsets.zero,
               children: [
-                // Cabeçalho
                 buildCabecalho(context),
-                // Barra de pesquisa
                 buildSearchBar(context),
-                // Resultados da pesquisa
                 if (_searchQuery.isNotEmpty)
-                  buildSearchResults(context,hospitaisFiltrados, userLat, userLon),
-
-                // Últimos acedidos
-                if (_searchQuery.isEmpty)
-                  FutureBuilder<List<Hospital>>(
-                    future: snsRepository.listarUltimosAcedidos(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      } else if (snapshot.hasError) {
-                        return Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Center(child: Text('Erro ao carregar últimos acedidos')),
-                        );
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return SizedBox();
-                      }
-
-                      final ultimosAcedidos = snapshot.data!;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Últimos Acedidos', style: Theme.of(context).textTheme.titleMedium),
-                                tuturialButton(
-                                  context: context,
-                                  onPressed: () => setState(() {}),
-                                ),
-                              ],
-                            ),
-                          ),
-                          buildHospitalList(
-                            context: context,
-                            hospitais: ultimosAcedidos,
-                            userLat: userLat,
-                            userLon: userLon,
-                            snsRepository: snsRepository,
-                            key: Key("last-visited-key"),
-                          ),
-                        ],
-                      );
-                    },
+                  buildSearchResults(context, hospitaisFiltrados, userLat, userLon),
+                if (_searchQuery.isEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Últimos Acedidos', style: Theme.of(context).textTheme.titleMedium),
+                        tuturialButton(
+                          context: context,
+                          onPressed: () => setState(() {}),
+                        ),
+                      ],
+                    ),
                   ),
+                  buildHospitalList(
+                    context: context,
+                    hospitais: ultimosAcedidos,
+                    userLat: userLat,
+                    userLon: userLon,
+                    snsRepository: snsRepository,
+                    key: Key("last-visited-key"),
+                  ),
+                ],
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
                   child: Text('Mais Próximos', style: Theme.of(context).textTheme.titleMedium),
                 ),
-
                 buildHospitalList(
                   context: context,
                   hospitais: hospitaisMaisProximosTop3,
@@ -360,8 +358,6 @@ class _DashboardPageState extends State<DashboardPage> {
       },
     );
   }
-
-
 }
 
 

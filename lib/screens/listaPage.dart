@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:prjectcm/data/sns_repository.dart';
 import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/models/hospital.dart';
@@ -15,12 +16,9 @@ class ListaPage extends StatefulWidget {
 class _ListaPageState extends State<ListaPage> {
   late TextEditingController _searchController;
   late FocusNode _focusNode;
-  late Future<List<Hospital>> _futureHospitais;
-  List<Hospital> _hospitaisFiltrados = [];
   String _searchQuery = '';
   bool filtrarurgenciaAtiva = false;
-
-  String? _ordenarPorSelecionado; // null significa "default
+  String? _ordenarPorSelecionado;
   final List<String> _opcoesOrdenacao = ['Distância', 'Avaliação'];
 
   @override
@@ -28,8 +26,6 @@ class _ListaPageState extends State<ListaPage> {
     super.initState();
     _searchController = TextEditingController();
     _focusNode = FocusNode();
-
-    _futureHospitais = _carregarHospitaisComFiltros();
   }
 
   @override
@@ -39,10 +35,8 @@ class _ListaPageState extends State<ListaPage> {
     super.dispose();
   }
 
-  Future<List<Hospital>> _carregarHospitaisComFiltros() async {
+  Future<List<Hospital>> _carregarHospitaisComFiltros(double userLat, double userLon) async {
     final snsRepository = context.read<SnsRepository>();
-    final userLat = snsRepository.latitude;
-    final userLon = snsRepository.longitude;
 
     List<Hospital> hospitais = await snsRepository.getAllHospitals();
 
@@ -51,39 +45,34 @@ class _ListaPageState extends State<ListaPage> {
     }
 
     if (_ordenarPorSelecionado == 'Distância') {
-      hospitais = snsRepository.ordenarListaPorDistancia(hospitais, userLat, userLon);
+      hospitais =
+          snsRepository.ordenarListaPorDistancia(hospitais, userLat, userLon);
     } else if (_ordenarPorSelecionado == 'Avaliação') {
       hospitais = snsRepository.ordenarListaPorAvaliacao(hospitais);
     }
 
     if (_searchQuery.isNotEmpty) {
       final lowerQuery = _searchQuery.toLowerCase();
-      hospitais = hospitais.where((hospital) => hospital.name.toLowerCase().contains(lowerQuery)).toList();
+      hospitais = hospitais
+          .where((hospital) => hospital.name.toLowerCase().contains(lowerQuery))
+          .toList();
     }
-
-
-
 
     return hospitais;
   }
 
   void _atualizarLista() {
     setState(() {
-      _futureHospitais = _carregarHospitaisComFiltros();
     });
   }
 
   void _aoMudarPesquisa(String query) {
-    setState(() {
-      _searchQuery = query;
-    });
+    _searchQuery = query;
     _atualizarLista();
   }
 
   void _filtrarUrgencia() {
-    setState(() {
-      filtrarurgenciaAtiva = !filtrarurgenciaAtiva;
-    });
+    filtrarurgenciaAtiva = !filtrarurgenciaAtiva;
     _atualizarLista();
   }
 
@@ -124,7 +113,8 @@ class _ListaPageState extends State<ListaPage> {
             Future.delayed(Duration(milliseconds: 150), _atualizarLista);
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 5.0, horizontal: 15.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -160,92 +150,114 @@ class _ListaPageState extends State<ListaPage> {
   @override
   Widget build(BuildContext context) {
     final snsRepository = context.read<SnsRepository>();
-    final database = context.read<SqfliteSnsDataSource>();
-    final userLat = snsRepository.latitude;
-    final userLon = snsRepository.longitude;
 
     return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 15, right: 15, top: 35.0, bottom: 5),
-            child: TextField(
-              controller: _searchController,
-              focusNode: _focusNode,
-              style: TextStyle(fontSize: 15, color: Colors.black),
-              decoration: InputDecoration(
-                labelText: 'Procure Pelo Hospital',
-                labelStyle: TextStyle(fontSize: 14, color: Colors.black),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
-                suffixIcon: Icon(Icons.search),
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      body: FutureBuilder<LocationData>(
+        future: snsRepository.locationModule.onLocationChanged().first,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError || !snapshot.hasData) {
+            return Center(child: Text('Erro ao obter localização.'));
+          }
+
+          final location = snapshot.data!;
+          final userLat = location.latitude ?? 0;
+          final userLon = location.longitude ?? 0;
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(
+                    left: 15, right: 15, top: 35.0, bottom: 5),
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _focusNode,
+                  style: TextStyle(fontSize: 15, color: Colors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Procure Pelo Hospital',
+                    labelStyle: TextStyle(fontSize: 14, color: Colors.black),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    suffixIcon: Icon(Icons.search),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  ),
+                  onChanged: _aoMudarPesquisa,
+                ),
               ),
-              onChanged: _aoMudarPesquisa,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () => _mostrarDropdownMenu(context),
-                  child: Container(
-                    height: 31,
-                    padding: EdgeInsets.symmetric(horizontal: 35),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.onSecondary,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.secondary,
-                        width: 2,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Text(
-                          _ordenarPorSelecionado ?? 'Ordenar por',
-                          style: TextStyle(
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                      onTap: () => _mostrarDropdownMenu(context),
+                      child: Container(
+                        height: 31,
+                        padding: EdgeInsets.symmetric(horizontal: 35),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSecondary,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
                             color: Theme.of(context).colorScheme.secondary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            width: 2,
                           ),
                         ),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          color: Theme.of(context).colorScheme.secondary,
-                          size: 20,
+                        child: Row(
+                          children: [
+                            Text(
+                              _ordenarPorSelecionado ?? 'Ordenar por',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.secondary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              color: Theme.of(context).colorScheme.secondary,
+                              size: 20,
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    _urgenciaFilterButton(),
+                  ],
                 ),
-                _urgenciaFilterButton(),
-              ],
-            ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<Hospital>>(
-              future: _futureHospitais,
-              builder: (_, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  print(snapshot.error);
-                  return Center(child: Text('Erro ao carregar hospitais: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('Nenhum hospital registado.'));
-                }
+              ),
+              Expanded(
+                child: FutureBuilder<List<Hospital>>(
+                  future: _carregarHospitaisComFiltros(userLat, userLon),
+                  builder: (_, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      print(snapshot.error);
+                      return Center(
+                          child: Text(
+                              'Erro ao carregar hospitais: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('Nenhum hospital registado.'));
+                    }
 
-                final hospitais = snapshot.data!;
+                    final hospitais = snapshot.data!;
 
-                return buildList(hospitais: hospitais, snsRepository: snsRepository, userLat: userLat, userLon: userLon);
-              },
-            ),
-          ),
-        ],
+                    return buildList(
+                        hospitais: hospitais,
+                        snsRepository: snsRepository,
+                        userLat: userLat,
+                        userLon: userLon);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -307,7 +319,8 @@ class buildList extends StatelessWidget {
             : Theme.of(context).colorScheme.secondaryContainer;
 
         final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
-        final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+        final media =
+            snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
