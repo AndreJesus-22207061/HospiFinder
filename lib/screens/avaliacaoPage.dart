@@ -7,6 +7,9 @@ import 'package:prjectcm/data/sns_repository.dart';
 import 'package:testable_form_field/testable_form_field.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:uuid/uuid.dart';
+import 'package:diacritic/diacritic.dart';
+
+
 
 class AvaliacaoPage extends StatefulWidget {
   @override
@@ -135,9 +138,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
                   selectedItem?.name ?? 'Selecione o Hospital',
                   style: TextStyle(
                     color: selectedItem == null ? Colors.grey : Colors.black,
-                    fontStyle: selectedItem == null
-                        ? FontStyle.italic
-                        : FontStyle.normal,
+                    fontStyle: selectedItem == null ? FontStyle.italic : FontStyle.normal,
                   ),
                 );
               },
@@ -168,6 +169,11 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
                   style: TextStyle(color: Colors.black),
                 ),
               ),
+              filterFn: (Hospital hospital, String filter) {
+                final hospitalName = removeDiacritics(hospital.name.toLowerCase());
+                final normalizedFilter = removeDiacritics(filter.toLowerCase());
+                return hospitalName.contains(normalizedFilter);
+              },
             ),
           ],
         );

@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -110,11 +111,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
                 final hospitaisFiltrados = _searchQuery.isEmpty
                     ? todosHospitais
-                    : todosHospitais
-                        .where((hospital) => hospital.name
-                            .toLowerCase()
-                            .contains(_searchQuery.toLowerCase()))
-                        .toList();
+                    : todosHospitais.where((hospital) {
+                  final nomeHospital = removeDiacritics(hospital.name.toLowerCase());
+                  final queryNormalizada = removeDiacritics(_searchQuery.toLowerCase());
+                  return nomeHospital.contains(queryNormalizada);
+                }).toList();
 
                 final hospitaisMaisProximos = snsRepository
                     .ordenarListaPorDistancia(todosHospitais, userLat, userLon);

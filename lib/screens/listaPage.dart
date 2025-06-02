@@ -1,3 +1,4 @@
+import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:prjectcm/data/sns_repository.dart';
@@ -56,10 +57,11 @@ class _ListaPageState extends State<ListaPage> {
     }
 
     if (_searchQuery.isNotEmpty) {
-      final lowerQuery = _searchQuery.toLowerCase();
-      hospitais = hospitais
-          .where((hospital) => hospital.name.toLowerCase().contains(lowerQuery))
-          .toList();
+      final normalizedQuery = removeDiacritics(_searchQuery.toLowerCase());
+      hospitais = hospitais.where((hospital) {
+        final normalizedName = removeDiacritics(hospital.name.toLowerCase());
+        return normalizedName.contains(normalizedQuery);
+      }).toList();
     }
 
     return hospitais;
