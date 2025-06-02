@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:prjectcm/data/sns_repository.dart';
 import 'package:testable_form_field/testable_form_field.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:uuid/uuid.dart';
 
 class AvaliacaoPage extends StatefulWidget {
   @override
@@ -14,6 +15,8 @@ class AvaliacaoPage extends StatefulWidget {
 
 class _AvaliacaoPageState extends State<AvaliacaoPage> {
   final _formKey = GlobalKey<FormState>();
+  final _uuid = Uuid();
+
 
   Hospital? _selectedHospital;
   int? _avaliacao;
@@ -374,17 +377,21 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
     );
   }
 
+
+
   void _submit() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final novaAvaliacao = EvaluationReport(
+        id: _uuid.v4(),
+        hospitalId: _selectedHospital!.id,
         rating: _avaliacao!,
         dataHora: _selectedDate,
         notas: _notas,
       );
 
       final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-      snsRepository.addAvaliacao(novaAvaliacao, _selectedHospital!);
+      snsRepository.local.insertAvaliacao(novaAvaliacao);
 
       setState(() {
         _submitSucesso = true;

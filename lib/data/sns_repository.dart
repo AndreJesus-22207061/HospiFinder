@@ -10,8 +10,6 @@ import 'package:prjectcm/models/hospital.dart';
 import 'package:flutter/material.dart';
 import 'package:prjectcm/models/waiting_time.dart';
 import 'package:prjectcm/service/connectivity_service.dart';
-
-import '../http/http_client.dart';
 import 'http_sns_datasource.dart';
 
 
@@ -36,18 +34,28 @@ class SnsRepository extends SnsDataSource {
   @override
   Future<List<Hospital>> getAllHospitals() async {
     if(await connectivityService.checkConnectivity()){
-      return remote.getAllHospitals();
+
+      var hospitais = await remote.getAllHospitals();
+
+      local.deleteAll().then(
+          (_) {
+            for (var hospital in hospitais){
+              local.insertHospital(hospital);
+            }
+          }
+      );
+      return hospitais;
     }else{
-      return local.getAllHospitals();
+      return await local.getAllHospitals();
     }
   }
 
   @override
   Future<Hospital> getHospitalDetailById(int hospitalId) async {
     if(await connectivityService.checkConnectivity()){
-      return remote.getHospitalDetailById(hospitalId);
+      return await remote.getHospitalDetailById(hospitalId);
     }else{
-      return local.getHospitalDetailById(hospitalId);
+      return await local.getHospitalDetailById(hospitalId);
     }
   }
 
@@ -60,9 +68,9 @@ class SnsRepository extends SnsDataSource {
   @override
   Future<List<Hospital>> getHospitalsByName(String name) async {
     if(await connectivityService.checkConnectivity()){
-      return remote.getHospitalsByName(name);
+      return await remote.getHospitalsByName(name);
     }else{
-      return local.getHospitalsByName(name);
+      return await local.getHospitalsByName(name);
     }
   }
 
@@ -112,10 +120,6 @@ class SnsRepository extends SnsDataSource {
   }
 
 
-
-  void addAvaliacao(EvaluationReport avaliacao, Hospital hospital1){
-    hospital1.avaliacoes.add(avaliacao);
-  }
 
 
   double mediaAvaliacoes(Hospital hospital){

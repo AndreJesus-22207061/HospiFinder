@@ -47,6 +47,7 @@ dependencies:
   connectivity_plus: ^5.0.2
   provider: ^6.1.1
   path: any
+  uuid: ^4.0.0
 
   testable_form_field:
     git:

@@ -27,20 +27,38 @@ class SqfliteSnsDataSource extends SnsDataSource {
               'hasEmergency INTEGER '
               ')',
         );
+
+        await db.execute(
+            '''
+        CREATE TABLE avaliacao (
+          id TEXT PRIMARY KEY,
+          hospitalId TEXT NOT NULL,
+          rating INTEGER NOT NULL,
+          date DATETIME NOT NULL,
+          notes TEXT
+        )
+        '''
+        );
       },
       version: 1,
     );
   }
 
+
+
+
+
   @override
-  Future<void> attachEvaluation(int hospitalId, EvaluationReport report) {
-    // TODO: implement attachEvaluation
-    throw UnimplementedError();
+  Future<void> attachEvaluation(int hospitalId, EvaluationReport report) async{
+    if(_database == null){
+      throw Exception('Forgot to initialize the database?');
+    }
+
+
   }
 
   @override
   Future<List<Hospital>> getAllHospitals() async{
-
     if(_database == null){
       throw Exception('Forgot to initialize the database?');
     }
@@ -99,6 +117,17 @@ class SqfliteSnsDataSource extends SnsDataSource {
     await _database!.insert('hospital' , hospital.toDb());
 
   }
+
+  Future<void> insertAvaliacao(EvaluationReport avaliacao) async{
+
+    if(_database == null){
+      throw Exception('Forgot to initialize the database?');
+    }
+    await _database!.insert('avaliacao' , avaliacao.toDb());
+
+  }
+
+
 // devem apenas implementar aqui só e apenas os métodos da classe abstrata
   Future<void> apagarBaseDeDados() async {
     final caminho = join(await getDatabasesPath(), 'hospitals.db');
