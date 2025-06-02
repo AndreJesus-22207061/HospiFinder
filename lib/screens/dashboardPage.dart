@@ -16,12 +16,14 @@ class _DashboardPageState extends State<DashboardPage> {
   String _searchQuery = '';
   late TextEditingController _searchController;
   late FocusNode _focusNode;
+  late Future<Map<String, dynamic>> _dataFuture;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
     _focusNode = FocusNode();
+    _dataFuture = _loadAllData();
   }
 
   @override
@@ -71,81 +73,95 @@ class _DashboardPageState extends State<DashboardPage> {
         });
       },
       child: Scaffold(
-        body: FutureBuilder<Map<String, dynamic>>(
-          future: _loadAllData(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Erro ao carregar dados: ${snapshot.error}'));
-            } else if (!snapshot.hasData) {
-              return Center(child: Text('Dados indisponíveis'));
-            }
+        body: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            buildCabecalho(context),
+            buildSearchBar(context),
+            FutureBuilder<Map<String, dynamic>>(
+              future: _dataFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 30),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Center(child: Text('Erro ao carregar dados: ${snapshot.error}')),
+                  );
+                } else if (!snapshot.hasData) {
+                  return Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Center(child: Text('Dados indisponíveis')),
+                  );
+                }
 
-            final userLat = snapshot.data!['userLat'] as double;
-            final userLon = snapshot.data!['userLon'] as double;
-            final todosHospitais = snapshot.data!['hospitais'] as List<Hospital>;
-            final ultimosAcedidos = snapshot.data!['ultimosAcedidos'] as List<Hospital>;
+                final userLat = snapshot.data!['userLat'] as double;
+                final userLon = snapshot.data!['userLon'] as double;
+                final todosHospitais = snapshot.data!['hospitais'] as List<Hospital>;
+                final ultimosAcedidos = snapshot.data!['ultimosAcedidos'] as List<Hospital>;
 
-            final hospitaisFiltrados = _searchQuery.isEmpty
-                ? todosHospitais
-                : todosHospitais
-                .where((hospital) =>
-                hospital.name.toLowerCase().contains(_searchQuery.toLowerCase()))
-                .toList();
+                final hospitaisFiltrados = _searchQuery.isEmpty
+                    ? todosHospitais
+                    : todosHospitais
+                    .where((hospital) => hospital.name
+                    .toLowerCase()
+                    .contains(_searchQuery.toLowerCase()))
+                    .toList();
 
-            final hospitaisMaisProximos =
-            snsRepository.ordenarListaPorDistancia(todosHospitais, userLat, userLon);
-            final hospitaisMaisProximosTop3 = hospitaisMaisProximos.take(3).toList();
+                final hospitaisMaisProximos =
+                snsRepository.ordenarListaPorDistancia(todosHospitais, userLat, userLon);
+                final hospitaisMaisProximosTop3 = hospitaisMaisProximos.take(3).toList();
 
-            print('[DEBUG] ultimosAcedidos: ${ultimosAcedidos.length}');
-            print('[DEBUG] maisProximosTop3: ${hospitaisMaisProximosTop3.length}');
-
-            return ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                buildCabecalho(context),
-                buildSearchBar(context),
-                if (_searchQuery.isNotEmpty)
-                  buildSearchResults(context, hospitaisFiltrados, userLat, userLon),
-                if (_searchQuery.isEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Últimos Acedidos', style: Theme.of(context).textTheme.titleMedium),
-                        tuturialButton(
-                          context: context,
-                          onPressed: () => setState(() {}),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_searchQuery.isNotEmpty)
+                      buildSearchResults(context, hospitaisFiltrados, userLat, userLon),
+                    if (_searchQuery.isEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Últimos Acedidos',
+                                style: Theme.of(context).textTheme.titleMedium),
+                            tuturialButton(
+                              context: context,
+                              onPressed: () => setState(() {}),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
+                      buildHospitalList(
+                        context: context,
+                        hospitais: ultimosAcedidos,
+                        userLat: userLat,
+                        userLon: userLon,
+                        snsRepository: snsRepository,
+                        key: Key("last-visited-key"),
+                      ),
+                    ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
+                      child: Text('Mais Próximos',
+                          style: Theme.of(context).textTheme.titleMedium),
                     ),
-                  ),
-                  buildHospitalList(
-                    context: context,
-                    hospitais: ultimosAcedidos,
-                    userLat: userLat,
-                    userLon: userLon,
-                    snsRepository: snsRepository,
-                    key: Key("last-visited-key"),
-                  ),
-                ],
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
-                  child: Text('Mais Próximos', style: Theme.of(context).textTheme.titleMedium),
-                ),
-                buildHospitalList(
-                  context: context,
-                  hospitais: hospitaisMaisProximosTop3,
-                  userLat: userLat,
-                  userLon: userLon,
-                  snsRepository: snsRepository,
-                  key: Key("Nearest-hospital-key"),
-                ),
-              ],
-            );
-          },
+                    buildHospitalList(
+                      context: context,
+                      hospitais: hospitaisMaisProximosTop3,
+                      userLat: userLat,
+                      userLon: userLon,
+                      snsRepository: snsRepository,
+                      key: Key("Nearest-hospital-key"),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

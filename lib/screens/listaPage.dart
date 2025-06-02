@@ -20,12 +20,15 @@ class _ListaPageState extends State<ListaPage> {
   bool filtrarurgenciaAtiva = false;
   String? _ordenarPorSelecionado;
   final List<String> _opcoesOrdenacao = ['Distância', 'Avaliação'];
+  late Future<LocationData> _locationFuture;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
     _focusNode = FocusNode();
+    final snsRepository = context.read<SnsRepository>();
+    _locationFuture = snsRepository.locationModule.onLocationChanged().first;
   }
 
   @override
@@ -35,7 +38,8 @@ class _ListaPageState extends State<ListaPage> {
     super.dispose();
   }
 
-  Future<List<Hospital>> _carregarHospitaisComFiltros(double userLat, double userLon) async {
+  Future<List<Hospital>> _carregarHospitaisComFiltros(
+      double userLat, double userLon) async {
     final snsRepository = context.read<SnsRepository>();
 
     List<Hospital> hospitais = await snsRepository.getAllHospitals();
@@ -62,8 +66,7 @@ class _ListaPageState extends State<ListaPage> {
   }
 
   void _atualizarLista() {
-    setState(() {
-    });
+    setState(() {});
   }
 
   void _aoMudarPesquisa(String query) {
@@ -152,86 +155,85 @@ class _ListaPageState extends State<ListaPage> {
     final snsRepository = context.read<SnsRepository>();
 
     return Scaffold(
-      body: FutureBuilder<LocationData>(
-        future: snsRepository.locationModule.onLocationChanged().first,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError || !snapshot.hasData) {
-            return Center(child: Text('Erro ao obter localização.'));
-          }
-
-          final location = snapshot.data!;
-          final userLat = location.latitude ?? 0;
-          final userLon = location.longitude ?? 0;
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                    left: 15, right: 15, top: 35.0, bottom: 5),
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _focusNode,
-                  style: TextStyle(fontSize: 15, color: Colors.black),
-                  decoration: InputDecoration(
-                    labelText: 'Procure Pelo Hospital',
-                    labelStyle: TextStyle(fontSize: 14, color: Colors.black),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30)),
-                    suffixIcon: Icon(Icons.search),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  ),
-                  onChanged: _aoMudarPesquisa,
-                ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+                left: 15, right: 15, top: 35.0, bottom: 5),
+            child: TextField(
+              controller: _searchController,
+              focusNode: _focusNode,
+              style: TextStyle(fontSize: 15, color: Colors.black),
+              decoration: InputDecoration(
+                labelText: 'Procure Pelo Hospital',
+                labelStyle: TextStyle(fontSize: 14, color: Colors.black),
+                filled: true,
+                fillColor: Colors.white,
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                suffixIcon: Icon(Icons.search),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: () => _mostrarDropdownMenu(context),
-                      child: Container(
-                        height: 31,
-                        padding: EdgeInsets.symmetric(horizontal: 35),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSecondary,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.secondary,
-                            width: 2,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              _ordenarPorSelecionado ?? 'Ordenar por',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: Theme.of(context).colorScheme.secondary,
-                              size: 20,
-                            ),
-                          ],
-                        ),
+              onChanged: _aoMudarPesquisa,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () => _mostrarDropdownMenu(context),
+                  child: Container(
+                    height: 31,
+                    padding: EdgeInsets.symmetric(horizontal: 35),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.secondary,
+                        width: 2,
                       ),
                     ),
-                    _urgenciaFilterButton(),
-                  ],
+                    child: Row(
+                      children: [
+                        Text(
+                          _ordenarPorSelecionado ?? 'Ordenar por',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.secondary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          color: Theme.of(context).colorScheme.secondary,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: FutureBuilder<List<Hospital>>(
+                _urgenciaFilterButton(),
+              ],
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<LocationData>(
+              future: _locationFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError || !snapshot.hasData) {
+                  return Center(child: Text('Erro ao obter localização.'));
+                }
+
+                final location = snapshot.data!;
+                final userLat = location.latitude ?? 0;
+                final userLon = location.longitude ?? 0;
+
+                return FutureBuilder<List<Hospital>>(
                   future: _carregarHospitaisComFiltros(userLat, userLon),
                   builder: (_, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -253,11 +255,11 @@ class _ListaPageState extends State<ListaPage> {
                         userLat: userLat,
                         userLon: userLon);
                   },
-                ),
-              ),
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

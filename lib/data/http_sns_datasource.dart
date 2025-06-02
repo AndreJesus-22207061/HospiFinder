@@ -11,13 +11,6 @@ class HttpSnsDataSource extends SnsDataSource {
 
   HttpSnsDataSource({required HttpClient client}) : _client = client;
 
-  List<Hospital> hospitalList = [];
-  double _latitude = 0.0;
-  double _longitude = 0.0;
-  List<int> ultimosAcedidosIds = [];
-
-  double get latitude => _latitude;
-  double get longitude => _longitude;
 
   @override
   Future<void> attachEvaluation(int hospitalId, EvaluationReport report) {

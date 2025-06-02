@@ -24,8 +24,6 @@ class SnsRepository extends SnsDataSource {
 
   SnsRepository(this.local, this.remote, this.connectivityService, this.locationModule);
 
-
-  List<Hospital> hospitalList = [];
   List<int> ultimosAcedidosIds = [];
 
 

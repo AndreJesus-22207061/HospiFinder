@@ -16,78 +16,60 @@ class MapaPage extends StatefulWidget {
 }
 
 class _MapaPageState extends State<MapaPage> {
-  Location _locationController = Location();
-  static const LatLng _posRandom = LatLng(38.763973, -9.276104);
-
+  static const LatLng _posRandom = LatLng(38.75799917281845, -9.15307308768478);
   LatLng? _currentPos = _posRandom;
   Set<Marker> _hospitalMarkers = {};
+
+  late final SnsRepository snsRepository;
 
   @override
   void initState() {
     super.initState();
-    getLocalizacaoUpdates();
-    //carregarHospitais();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      snsRepository = Provider.of<SnsRepository>(context, listen: false);
+      listenToLocationUpdates();
+      carregarHospitais();
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // body: _currentPos == null
-      //     ? const Center(child: CircularProgressIndicator())
-      //     : GoogleMap(
-      //   initialCameraPosition: CameraPosition(
-      //     target: _currentPos!,
-      //     zoom: 13,
-      //   ),
-      //   markers: {
-      //     // Marker azul para a localização atual
-      //     Marker(
-      //       markerId: const MarkerId("user_location"),
-      //       position: _currentPos!,
-      //       icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-      //       infoWindow: const InfoWindow(title: "A minha localização"),
-      //     ),
-      //     ..._hospitalMarkers, // Markers vermelhos dos hospitais
-      //   },
-      // ),
-
-      // Código temporário para evitar erros
-      body: const Center(
-        child: Text("Conteúdo do mapa comentado para testes."),
-      ),
-    );
-  }
-
-  Future<void> getLocalizacaoUpdates() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
-      if (!_serviceEnabled) return;
-    }
-
-    _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationController.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) return;
-    }
-
-    _locationController.onLocationChanged.listen((LocationData currentLocation) {
-      if (currentLocation.latitude != null && currentLocation.longitude != null) {
+  void listenToLocationUpdates() {
+    snsRepository.locationModule.onLocationChanged().listen((locationData) {
+      if (locationData.latitude != null && locationData.longitude != null) {
         setState(() {
-          _currentPos = LatLng(currentLocation.latitude!, currentLocation.longitude!);
+          _currentPos = LatLng(locationData.latitude!, locationData.longitude!);
         });
       }
     });
   }
 
-  /*Future<void> carregarHospitais() async {
-    try {
-      List<Hospital> hospitais = await _snsRepository.getAllHospitals();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _currentPos == null
+          ? const Center(child: CircularProgressIndicator())
+          : GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: _currentPos!,
+          zoom: 13,
+        ),
+        markers: {
+          Marker(
+            markerId: const MarkerId("user_location"),
+            position: _currentPos!,
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            infoWindow: const InfoWindow(title: "A minha localização"),
+          ),
+          ..._hospitalMarkers,
+        },
+      ),
+    );
+  }
 
-      Set<Marker> markersTemp = hospitais.map((hospital) {
+  Future<void> carregarHospitais() async {
+    try {
+      final hospitais = await snsRepository.getAllHospitals();
+
+      final markersTemp = hospitais.map((hospital) {
         return Marker(
           markerId: MarkerId(hospital.id.toString()),
           position: LatLng(hospital.latitude, hospital.longitude),
@@ -113,5 +95,5 @@ class _MapaPageState extends State<MapaPage> {
     } catch (e) {
       print('Erro ao carregar hospitais: $e');
     }
-  }*/
+  }
 }
