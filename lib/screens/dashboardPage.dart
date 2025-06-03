@@ -360,9 +360,7 @@ class _DashboardPageState extends State<DashboardPage> {
           final Color boxColor = index.isEven
               ? Theme.of(context).colorScheme.primaryContainer
               : Theme.of(context).colorScheme.secondaryContainer;
-          final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
-          final media =
-              snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+
 
           return FutureBuilder<List<EvaluationReport>>(
             future: snsRepository.getEvaluationsByHospitalId(hospital.id),

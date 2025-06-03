@@ -322,6 +322,7 @@ class buildList extends StatelessWidget {
             ? Theme.of(context).colorScheme.primaryContainer
             : Theme.of(context).colorScheme.secondaryContainer;
 
+
         final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
         final media =
             snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
