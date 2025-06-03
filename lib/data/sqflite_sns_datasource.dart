@@ -117,13 +117,20 @@ class SqfliteSnsDataSource extends SnsDataSource {
   }
 
   @override
-  Future<void> insertHospital(Hospital hospital) async{
-
-    if(database == null){
-      throw Exception('Forgot to initialize the database?');
+  Future<void> insertHospital(Hospital hospital) async {
+    if (database == null) {
+      throw Exception('Database not initialized');
     }
-    await database!.insert('hospital' , hospital.toDb());
 
+    try {
+      await database!.insert('hospital', hospital.toDb());
+      print('Hospital inserido com sucesso: ${hospital.name} (ID: ${hospital.id})');
+    } catch (e) {
+      print('Erro ao inserir hospital: ${hospital.name} (ID: ${hospital.id})');
+      print('Dados: ${hospital.toDb()}');
+      print('Erro: $e');
+      rethrow;
+    }
   }
 
 

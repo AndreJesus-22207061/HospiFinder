@@ -45,6 +45,10 @@ class _ListaPageState extends State<ListaPage> {
 
     List<Hospital> hospitais = await snsRepository.getAllHospitals();
 
+    for (var hospital in hospitais) {
+      hospital.avaliacoes = await snsRepository.getEvaluationsByHospitalId(hospital.id);
+    }
+
     if (filtrarurgenciaAtiva) {
       hospitais = snsRepository.filtrarHospitaisComUrgencia(hospitais);
     }
@@ -312,6 +316,7 @@ class buildList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('[DEBUG] Desenhei lista de hospitais com ${hospitais.length} itens');
     return ListView.builder(
       key: Key("list-view"),
       padding: const EdgeInsets.symmetric(vertical: 8.0),
