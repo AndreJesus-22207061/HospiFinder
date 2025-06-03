@@ -187,7 +187,7 @@ class SnsRepository extends SnsDataSource {
   }
 
   List<Widget> gerarEstrelasParaAvaliacao(EvaluationReport avaliacao, {double size = 20}) {
-    return _gerarEstrelas(avaliacao.rating as double, size: size);
+    return _gerarEstrelas(avaliacao.rating.toDouble(), size: size);
   }
 
 
