@@ -3,6 +3,8 @@ import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
 
+import '../lib/models/waiting_time.dart';
+
 class FakeSqfliteSnsDataSource extends SqfliteSnsDataSource {
 
   final List<Hospital> hospitals = [];
@@ -46,4 +48,12 @@ class FakeSqfliteSnsDataSource extends SqfliteSnsDataSource {
   Future<List<Hospital>> getHospitalsByName(String name) async {
     return hospitals.where((element) => element.name.toLowerCase().contains(name.toLowerCase())).toList();
   }
+
+  @override
+  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) async {
+    return [];
+  }
+
+  @override
+  Future<void> insertWaitingTime(int hospitalId, dynamic waitingTime) async {}
 }
