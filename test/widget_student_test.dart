@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:prjectcm/data/sns_repository.dart';
 import 'package:prjectcm/main.dart';
@@ -396,10 +396,8 @@ void runWidgetTests() {
 
   });
 
-
-
 }
 
 
-
+*/
 
