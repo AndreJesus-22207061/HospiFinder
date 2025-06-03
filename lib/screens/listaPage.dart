@@ -2,7 +2,6 @@ import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:prjectcm/data/sns_repository.dart';
-import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:provider/provider.dart';
 import 'package:prjectcm/widgets/hospitalBox.dart';

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
-import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';

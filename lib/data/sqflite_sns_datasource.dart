@@ -70,7 +70,6 @@ class SqfliteSnsDataSource extends SnsDataSource {
     List result = await database!.rawQuery("SELECT * FROM hospital");
     return result.map((entry) => Hospital.fromDB(entry)).toList();
 
-    throw UnimplementedError();
   }
 
 

@@ -1,13 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 import 'package:prjectcm/data/sns_datasource.dart';
 import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
-import 'package:flutter/material.dart';
 import 'package:prjectcm/models/waiting_time.dart';
 import 'package:prjectcm/service/connectivity_service.dart';
 import 'http_sns_datasource.dart';

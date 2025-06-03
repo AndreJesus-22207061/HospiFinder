@@ -50,7 +50,6 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
             return Center(child: Text('Nenhum hospital disponível.'));
           }
 
-          final listaHospitais = snapshot.data!;
           return SingleChildScrollView(
             child: Padding(
               padding:

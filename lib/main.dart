@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:prjectcm/data/http_sns_datasource.dart';
 import 'package:prjectcm/data/sns_repository.dart';
 import 'package:prjectcm/main_screen.dart';
-import 'package:prjectcm/models/hospital.dart';
 import 'package:prjectcm/service/connectivity_service.dart';
 import 'package:prjectcm/theme.dart';
 import 'package:provider/provider.dart';
