@@ -14,8 +14,7 @@ class HttpSnsDataSource extends SnsDataSource {
 
   @override
   Future<void> attachEvaluation(int hospitalId, EvaluationReport report) {
-    // TODO: implement attachEvaluation
-    throw UnimplementedError();
+    throw Exception('Not available');
   }
 
   @override
@@ -68,8 +67,7 @@ class HttpSnsDataSource extends SnsDataSource {
 
   @override
   Future<void> insertHospital(Hospital hospital) {
-    // TODO: implement insertHospital
-    throw UnimplementedError();
+    throw Exception('Not available');
   }
 
 

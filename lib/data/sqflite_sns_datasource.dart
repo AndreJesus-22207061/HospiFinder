@@ -116,6 +116,7 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
   }
 
+
   @override
   Future<void> insertHospital(Hospital hospital) async {
     if (database == null) {
@@ -123,8 +124,12 @@ class SqfliteSnsDataSource extends SnsDataSource {
     }
 
     try {
-      await database!.insert('hospital', hospital.toDb());
-      print('Hospital inserido com sucesso: ${hospital.name} (ID: ${hospital.id})');
+      await database!.insert(
+        'hospital',
+        hospital.toDb(),
+        conflictAlgorithm: ConflictAlgorithm.replace,  // Isto garante o replace
+      );
+      print('Hospital inserido com sucesso (ou substituído): ${hospital.name} (ID: ${hospital.id})');
     } catch (e) {
       print('Erro ao inserir hospital: ${hospital.name} (ID: ${hospital.id})');
       print('Dados: ${hospital.toDb()}');
@@ -136,19 +141,14 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
 
 
+
 // devem apenas implementar aqui só e apenas os métodos da classe abstrata
-  Future<void> apagarBaseDeDados() async {
-    final caminho = join(await getDatabasesPath(), 'hospitals.db');
-    await deleteDatabase(caminho);
-    print('Base de dados apagada com sucesso.');
-  }
+  //Future<void> apagarBaseDeDados() async {
+    //final caminho = join(await getDatabasesPath(), 'hospitals.db');
+    //await deleteDatabase(caminho);
+    //print('Base de dados apagada com sucesso.');
+  //}
 
-  Future<void> deleteAll() async{
-    if(database == null){
-      throw Exception('Forgot to initialize the database?');
-    }
-    await database!.rawDelete('DELETE FROM hospital');
 
-  }
 
 }

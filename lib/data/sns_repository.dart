@@ -32,19 +32,14 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getAllHospitals() async {
-    if(await connectivityService.checkConnectivity()){
-
+    if (await connectivityService.checkConnectivity()) {
       var hospitais = await remote.getAllHospitals();
 
-      local.deleteAll().then(
-          (_) {
-            for (var hospital in hospitais){
-              local.insertHospital(hospital);
-            }
-          }
-      );
+      for (var hospital in hospitais) {
+        local.insertHospital(hospital);
+      }
       return hospitais;
-    }else{
+    } else {
       return await local.getAllHospitals();
     }
   }
@@ -83,7 +78,7 @@ class SnsRepository extends SnsDataSource {
     final db = local.database;
 
     if (db == null) {
-      throw Exception('Base de dados local não inicializada');
+      throw Exception('Forgot to initialize the database?');
     }
 
     final result = await db.rawQuery(

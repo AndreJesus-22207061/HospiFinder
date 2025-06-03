@@ -21,7 +21,7 @@ void main() async{
   final snsDataBase = SqfliteSnsDataSource();
   final locationModule = GPSLocationModule();
 
-  await snsDataBase.apagarBaseDeDados();
+  //await snsDataBase.apagarBaseDeDados();
 
   runApp(
     MultiProvider(
