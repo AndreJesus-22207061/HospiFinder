@@ -188,7 +188,7 @@ class HospitalDetailPage extends StatelessWidget {
                                           ),
                                           SizedBox(height: 4),
                                           Text(
-                                            "${hospital.distanciaDe(userLat, userLon).toStringAsFixed(1)} km",
+                                              hospital.distanciaFormatada(userLat, userLon),
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyMedium

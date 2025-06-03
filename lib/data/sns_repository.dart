@@ -117,7 +117,7 @@ class SnsRepository extends SnsDataSource {
 
   List<Hospital> ordenarListaPorDistancia(List<Hospital> lista, double minhaLat, double minhaLon) {
     final copia = lista
-        .map((h) => MapEntry(h, h.distanciaDe(minhaLat, minhaLon)))
+        .map((h) => MapEntry(h, h.distanciaKm(minhaLat, minhaLon)))
         .toList();
 
     copia.sort((a, b) => a.value.compareTo(b.value));

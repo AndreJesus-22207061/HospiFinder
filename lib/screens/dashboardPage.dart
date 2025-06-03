@@ -285,7 +285,6 @@ class _DashboardPageState extends State<DashboardPage> {
           itemCount: hospitaisFiltrados.length,
           itemBuilder: (context, index) {
             final hospital = hospitaisFiltrados[index];
-            final distancia = hospital.distanciaDe(userLat, userLon);
             return GestureDetector(
               onTap: () {
                 final snsRepository =
@@ -324,7 +323,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     SizedBox(width: 10),
                     Text(
-                      '${distancia.toStringAsFixed(1)} km',
+                      hospital.distanciaFormatada(userLat, userLon),
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.black,

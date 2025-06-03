@@ -134,12 +134,12 @@ Widget _hospitalAddressText(BuildContext context, String district, String addres
 
 Widget _hospitalKmText(BuildContext context, Hospital hospital, double userLat, double userLon) {
   return Text(
-    "${hospital.distanciaDe(userLat, userLon).toStringAsFixed(1)} km",
+    hospital.distanciaFormatada(userLat, userLon),
     style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
   );
 }
 
-Widget _hospitalUrgencyText(BuildContext context, bool hasEmergency) {
+Widget _hospitalUrgencyWidget(BuildContext context, bool hasEmergency) {
   return Text(
     hasEmergency ? "Com Urgência" : "Sem Urgência",
     style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),

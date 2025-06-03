@@ -16,7 +16,7 @@ class SqfliteSnsDataSource extends SnsDataSource {
       onCreate: (db, version) async{
         await db.execute(
           'CREATE TABLE hospital('
-              'id TEXT PRIMARY KEY, '
+              'id INTEGER PRIMARY KEY, '
               'name TEXT NOT NULL, '
               'latitude REAL NOT NULL, '
               'longitude REAL NOT NULL, '
@@ -69,7 +69,6 @@ class SqfliteSnsDataSource extends SnsDataSource {
     }
     List result = await database!.rawQuery("SELECT * FROM hospital");
     return result.map((entry) => Hospital.fromDB(entry)).toList();
-
   }
 
 
@@ -141,12 +140,12 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
 
 
-// devem apenas implementar aqui só e apenas os métodos da classe abstrata
-  //Future<void> apagarBaseDeDados() async {
-    //final caminho = join(await getDatabasesPath(), 'hospitals.db');
-    //await deleteDatabase(caminho);
-    //print('Base de dados apagada com sucesso.');
-  //}
+//devem apenas implementar aqui só e apenas os métodos da classe abstrata
+  Future<void> apagarBaseDeDados() async {
+    final caminho = join(await getDatabasesPath(), 'hospitals.db');
+    await deleteDatabase(caminho);
+    print('Base de dados apagada com sucesso.');
+  }
 
 
 

@@ -1,5 +1,6 @@
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'dart:math';
+import 'package:geolocator/geolocator.dart';
 
 class Hospital {
   final int id;
@@ -7,7 +8,7 @@ class Hospital {
   final double latitude;
   final double longitude;
   final String address;
-  final int phoneNumber;
+  final String phoneNumber;
   final String email;
   final String district;
   final bool hasEmergency;
@@ -27,28 +28,28 @@ class Hospital {
       }) : avaliacoes = avaliacoes ?? [];
 
 
-  factory Hospital.fromJSON(Map<String, dynamic> json){
+  factory Hospital.fromJSON(Map<String, dynamic> json) {
     return Hospital(
       id: json['Id'] ?? 0,
       name: json['Name'] ?? 'Sem nome',
       latitude: (json['Latitude'] ?? 0.0).toDouble(),
       longitude: (json['Longitude'] ?? 0.0).toDouble(),
       address: json['Address'] ?? 'Sem morada',
-      phoneNumber: json['Phone'] ?? 0,
+      phoneNumber: json['Phone']?.toString() ?? '',
       email: json['Email'] ?? 'sem@email.pt',
       district: json['District'] ?? 'Desconhecido',
       hasEmergency: json['HasEmergency'] ?? false,
     );
   }
 
-  factory Hospital.fromDB(Map<String, dynamic> db){
+  factory Hospital.fromDB(Map<String, dynamic> db) {
     return Hospital(
       id: db['id'] ?? 0,
       name: db['name'] ?? 'Sem nome',
       latitude: (db['latitude'] ?? 0.0).toDouble(),
       longitude: (db['longitude'] ?? 0.0).toDouble(),
       address: db['address'] ?? 'Sem morada',
-      phoneNumber: db['phoneNumber'] ?? 0,
+      phoneNumber: db['phoneNumber']?.toString() ?? '',
       email: db['email'] ?? 'sem@email.pt',
       district: db['district'] ?? 'Desconhecido',
       hasEmergency: (db['hasEmergency'] ?? 0) == 1,
@@ -71,30 +72,31 @@ class Hospital {
   }
 
 
+  double distanciaKm(double minhaLat, double minhaLon) {
+    final distanciaMetros = Geolocator.distanceBetween(
+      minhaLat,
+      minhaLon,
+      latitude,
+      longitude,
+    );
 
-
-  double distanciaDe(double minhaLat , double minhaLon){
-    const R = 6371; // raio da Terra em km
-
-    // Diferença de latitude e longitude em radianos
-    final dLat = _grausParaRadianos(latitude - minhaLat);
-    final dLon = _grausParaRadianos(longitude - minhaLon);
-
-    // Fórmula de Haversine:
-
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(_grausParaRadianos(minhaLat)) * cos(_grausParaRadianos(latitude)) *
-            sin(dLon / 2) * sin(dLon / 2);
-
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    final distancia = R * c;
-
-    return distancia;
+    return distanciaMetros / 1000; // em km
   }
 
-  double _grausParaRadianos(double graus) {
-    return graus * pi / 180;
+  String distanciaFormatada(double minhaLat, double minhaLon) {
+    final distanciaMetros = Geolocator.distanceBetween(
+      minhaLat,
+      minhaLon,
+      latitude,
+      longitude,
+    );
+
+    if (distanciaMetros < 1000) {
+      return '${distanciaMetros.round()} m';
+    } else {
+      final distanciaKm = distanciaMetros / 1000;
+      return '${distanciaKm.toStringAsFixed(1)} km';
+    }
   }
 
 
