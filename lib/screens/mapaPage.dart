@@ -1,10 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:prjectcm/data/sns_repository.dart';
-import 'package:prjectcm/models/hospital.dart';
-import 'package:prjectcm/http/http_client.dart';
 import 'package:provider/provider.dart';
 import 'hospital_detail_page.dart';
 
@@ -19,8 +15,9 @@ class _MapaPageState extends State<MapaPage> {
   static const LatLng _posRandom = LatLng(38.75799917281845, -9.15307308768478);
   LatLng? _currentPos = _posRandom;
   Set<Marker> _hospitalMarkers = {};
-
   late final SnsRepository snsRepository;
+
+  GoogleMapController? mapController;
 
   @override
   void initState() {
@@ -35,8 +32,9 @@ class _MapaPageState extends State<MapaPage> {
   void listenToLocationUpdates() {
     snsRepository.locationModule.onLocationChanged().listen((locationData) {
       if (locationData.latitude != null && locationData.longitude != null) {
+        final newPosition = LatLng(locationData.latitude!, locationData.longitude!);
         setState(() {
-          _currentPos = LatLng(locationData.latitude!, locationData.longitude!);
+          _currentPos = newPosition;
         });
       }
     });
@@ -53,13 +51,11 @@ class _MapaPageState extends State<MapaPage> {
           zoom: 13,
         ),
         markers: {
-          Marker(
-            markerId: const MarkerId("user_location"),
-            position: _currentPos!,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: const InfoWindow(title: "A minha localização"),
-          ),
           ..._hospitalMarkers,
+        },
+        myLocationEnabled: true,
+        onMapCreated: (controller) {
+          mapController = controller;
         },
       ),
     );
