@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:prjectcm/connectivity_module.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:prjectcm/screens/hospital_detail_page.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +10,7 @@ import 'package:provider/provider.dart';
 import '../data/sns_repository.dart';
 
 
-class HospitalBox extends StatelessWidget {
+class HospitalBox extends StatefulWidget {
   final Hospital hospital;
   final double userLat;
   final double userLon;
@@ -27,10 +31,28 @@ class HospitalBox extends StatelessWidget {
   });
 
   @override
+  State<HospitalBox> createState() => _HospitalBoxState();
+}
+
+
+class _HospitalBoxState extends State<HospitalBox> {
+  late SnsRepository snsRepository;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
+    final connectivityModule = Provider.of<ConnectivityModule>(context);
+    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
+    final locationModule = Provider.of<LocationModule>(context);
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: boxColor,
+        color: widget.boxColor,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
@@ -47,13 +69,21 @@ class HospitalBox extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.only(
             left: 8.0, right: 0.0, top: 6.0, bottom: 6.0),
-        child: _hospitalListTile(context, hospital, userLat, userLon , estrelas , media),
+        child: _hospitalListTile(context, widget.hospital, widget.userLat, widget.userLon , widget.estrelas , widget.media , snsRepository),
       ),
     );
   }
 }
 
-Widget _hospitalListTile(BuildContext context, Hospital hospital, double userLat, double userLon , List<Widget> estrelas , String media ) {
+Widget _hospitalListTile(
+    BuildContext context,
+    Hospital hospital,
+    double userLat,
+    double userLon,
+    List<Widget> estrelas,
+    String media,
+    SnsRepository snsRepository, // NOVO parâmetro
+    ) {
   return ListTile(
     title: Text(
       hospital.name,
@@ -112,7 +142,6 @@ Widget _hospitalListTile(BuildContext context, Hospital hospital, double userLat
       size: 34,
     ),
     onTap: () {
-      final snsRepository = Provider.of<SnsRepository>(context, listen: false);
       snsRepository.adicionarUltimoAcedido(hospital.id); // Atualiza os últimos acessados
 
       Navigator.push(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prjectcm/connectivity_module.dart';
 import 'package:prjectcm/data/sns_datasource.dart';
 import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/location_module.dart';
@@ -13,10 +14,10 @@ class SnsRepository extends SnsDataSource {
 
   final SqfliteSnsDataSource local;
   final HttpSnsDataSource remote;
-  final ConnectivityService connectivityService;
+  final ConnectivityModule connectivityModule;
   final LocationModule locationModule;
 
-  SnsRepository(this.local, this.remote, this.connectivityService, this.locationModule);
+  SnsRepository(this.local, this.remote, this.connectivityModule, this.locationModule);
 
   List<int> ultimosAcedidosIds = [];
 
@@ -28,7 +29,7 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getAllHospitals() async {
-    if (await connectivityService.checkConnectivity()) {
+    if (await connectivityModule.checkConnectivity()) {
       var hospitais = await remote.getAllHospitals();
 
       for (var hospital in hospitais) {
@@ -42,7 +43,7 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<Hospital> getHospitalDetailById(int hospitalId) async {
-    if(await connectivityService.checkConnectivity()){
+    if(await connectivityModule.checkConnectivity()){
       return await remote.getHospitalDetailById(hospitalId);
     }else{
       return await local.getHospitalDetailById(hospitalId);
@@ -56,8 +57,14 @@ class SnsRepository extends SnsDataSource {
   }
 
   @override
+  Future<void> insertWaitingTime(int hospitalId, waitingTime) {
+    // TODO: implement insertWaitingTime
+    throw UnimplementedError();
+  }
+
+  @override
   Future<List<Hospital>> getHospitalsByName(String name) async {
-    if(await connectivityService.checkConnectivity()){
+    if(await connectivityModule.checkConnectivity()){
       return await remote.getHospitalsByName(name);
     }else{
       return await local.getHospitalsByName(name);
@@ -132,8 +139,8 @@ class SnsRepository extends SnsDataSource {
     double soma =0.0;
     double media = 0.0;
     int cont = 0;
-    if(hospital.avaliacoes.isNotEmpty){
-      for(var h in hospital.avaliacoes){
+    if(hospital.reports.isNotEmpty){
+      for(var h in hospital.reports){
         soma += h.rating;
         cont  ++;
       }
@@ -180,6 +187,7 @@ class SnsRepository extends SnsDataSource {
   List<Widget> gerarEstrelasParaAvaliacao(EvaluationReport avaliacao, {double size = 20}) {
     return _gerarEstrelas(avaliacao.rating.toDouble(), size: size);
   }
+
 
 
 

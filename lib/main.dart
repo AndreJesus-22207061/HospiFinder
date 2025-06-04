@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prjectcm/connectivity_module.dart';
 import 'package:prjectcm/data/http_sns_datasource.dart';
 import 'package:prjectcm/data/sns_repository.dart';
 import 'package:prjectcm/main_screen.dart';
@@ -16,26 +17,15 @@ void main() async{
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  final snsService = HttpSnsDataSource(client: HttpClient());
-  final snsDataBase = SqfliteSnsDataSource();
-  final locationModule = GPSLocationService();
 
-  // await snsDataBase.apagarBaseDeDados();
 
   runApp(
     MultiProvider(
       providers: [
-        Provider<HttpSnsDataSource>(create: (_) => snsService),
-        Provider<SqfliteSnsDataSource>(create: (_) => snsDataBase),
-        Provider<LocationModule>(create: (_) => locationModule),
-        Provider<SnsRepository>(
-            create: (_) => SnsRepository(
-                snsDataBase,
-                snsService,
-                ConnectivityService(),
-                locationModule,
-            ),
-        ),
+        Provider<HttpSnsDataSource>.value(value: HttpSnsDataSource()),
+        Provider<ConnectivityModule>.value(value: ConnectivityService()),
+        Provider<SqfliteSnsDataSource>.value(value: SqfliteSnsDataSource()),
+        Provider<LocationModule>.value(value: GPSLocationService())
       ],
       child: MyApp(),
     ),
@@ -52,6 +42,14 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
+  late Future<void> _initialization;
+
+  @override
+  void initState() {
+    super.initState();
+    final db = context.read<SqfliteSnsDataSource>();
+    _initialization = db.apagarBaseDeDados().then((_) => db.init());
+  }
   @override
   Widget build(BuildContext context) {
     final hospitalDatabase = context.read<SqfliteSnsDataSource>();

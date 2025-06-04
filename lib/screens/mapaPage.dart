@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:prjectcm/connectivity_module.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
 import 'package:prjectcm/data/sns_repository.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
 import 'package:provider/provider.dart';
 import 'hospital_detail_page.dart';
 
@@ -15,15 +19,20 @@ class _MapaPageState extends State<MapaPage> {
   static const LatLng _posRandom = LatLng(38.75799917281845, -9.15307308768478);
   LatLng? _currentPos = _posRandom;
   Set<Marker> _hospitalMarkers = {};
-  late final SnsRepository snsRepository;
+  late SnsRepository snsRepository;
 
   GoogleMapController? mapController;
 
+
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
+    final connectivityModule = Provider.of<ConnectivityModule>(context);
+    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
+    final locationModule = Provider.of<LocationModule>(context);
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      snsRepository = Provider.of<SnsRepository>(context, listen: false);
       listenToLocationUpdates();
       carregarHospitais();
     });

@@ -8,11 +8,11 @@ class Hospital {
   final double latitude;
   final double longitude;
   final String address;
-  final String phoneNumber;
+  final int phoneNumber;
   final String email;
   final String district;
   final bool hasEmergency;
-  List<EvaluationReport> avaliacoes;
+  List<EvaluationReport> reports;
 
   Hospital(
       {required this.id,
@@ -25,7 +25,7 @@ class Hospital {
         required this.district,
         required this.hasEmergency,
         List<EvaluationReport>? avaliacoes,
-      }) : avaliacoes = avaliacoes ?? [];
+      }) : reports = avaliacoes ?? [];
 
 
   factory Hospital.fromJSON(Map<String, dynamic> json) {
@@ -35,7 +35,7 @@ class Hospital {
       latitude: (json['Latitude'] ?? 0.0).toDouble(),
       longitude: (json['Longitude'] ?? 0.0).toDouble(),
       address: json['Address'] ?? 'Sem morada',
-      phoneNumber: json['Phone']?.toString() ?? '',
+      phoneNumber: json['Phone'] ?? 0,
       email: json['Email'] ?? 'sem@email.pt',
       district: json['District'] ?? 'Desconhecido',
       hasEmergency: json['HasEmergency'] ?? false,
@@ -49,7 +49,7 @@ class Hospital {
       latitude: (db['latitude'] ?? 0.0).toDouble(),
       longitude: (db['longitude'] ?? 0.0).toDouble(),
       address: db['address'] ?? 'Sem morada',
-      phoneNumber: db['phoneNumber']?.toString() ?? '',
+      phoneNumber: db['phoneNumber'] ?? 0,
       email: db['email'] ?? 'sem@email.pt',
       district: db['district'] ?? 'Desconhecido',
       hasEmergency: (db['hasEmergency'] ?? 0) == 1,

@@ -21,7 +21,7 @@ class SqfliteSnsDataSource extends SnsDataSource {
               'latitude REAL NOT NULL, '
               'longitude REAL NOT NULL, '
               'address TEXT NOT NULL, '
-              'phoneNumber TEXT, '
+              'phoneNumber INTEGER, '
               'email TEXT, '
               'district TEXT, '
               'hasEmergency INTEGER '
@@ -94,6 +94,12 @@ class SqfliteSnsDataSource extends SnsDataSource {
   }
 
   @override
+  Future<void> insertWaitingTime(int hospitalId, waitingTime) {
+    // TODO: implement insertWaitingTime
+    throw UnimplementedError();
+  }
+
+  @override
   Future<List<Hospital>> getHospitalsByName(String name) async{
 
     if(database == null){
@@ -138,14 +144,13 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
 
 
-
-
 //devem apenas implementar aqui só e apenas os métodos da classe abstrata
   Future<void> apagarBaseDeDados() async {
     final caminho = join(await getDatabasesPath(), 'hospitals.db');
     await deleteDatabase(caminho);
     print('Base de dados apagada com sucesso.');
   }
+
 
 
 

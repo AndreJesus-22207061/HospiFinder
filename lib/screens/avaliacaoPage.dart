@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:prjectcm/connectivity_module.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:provider/provider.dart';
@@ -27,15 +31,22 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
   String? _notas;
   bool _submitSucesso = false;
   late Future<List<Hospital>> _futureHospitais;
+  late SnsRepository snsRepository;
+
 
   @override
-  void initState() {
-    super.initState();
-    _selectedDate = DateTime.now();
-    final snsRepository = Provider.of<SnsRepository>(context, listen: false);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
+    final connectivityModule = Provider.of<ConnectivityModule>(context);
+    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
+    final locationModule = Provider.of<LocationModule>(context);
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     _futureHospitais = snsRepository.getAllHospitals();
+    _selectedDate = DateTime.now();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder<List<Hospital>>(
@@ -395,7 +406,6 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
         notas: _notas,
       );
 
-      final snsRepository = Provider.of<SnsRepository>(context, listen: false);
       await snsRepository.attachEvaluation(_selectedHospital!.id,novaAvaliacao);
 
       setState(() {

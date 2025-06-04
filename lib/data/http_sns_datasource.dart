@@ -7,9 +7,7 @@ import 'package:prjectcm/models/waiting_time.dart';
 import '../http/http_client.dart';
 
 class HttpSnsDataSource extends SnsDataSource {
-  final HttpClient _client;
-
-  HttpSnsDataSource({required HttpClient client}) : _client = client;
+  HttpClient _client = HttpClient();
 
 
   @override
@@ -48,6 +46,13 @@ class HttpSnsDataSource extends SnsDataSource {
     // TODO: implement getHospitalWaitingTimes
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> insertWaitingTime(int hospitalId, waitingTime) {
+    // TODO: implement insertWaitingTime
+    throw UnimplementedError();
+  }
+
 
   @override
   Future<List<Hospital>> getHospitalsByName(String name) async {

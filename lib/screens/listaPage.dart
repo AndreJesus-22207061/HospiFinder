@@ -1,7 +1,11 @@
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:prjectcm/connectivity_module.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
 import 'package:prjectcm/data/sns_repository.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:provider/provider.dart';
 import 'package:prjectcm/widgets/hospitalBox.dart';
@@ -21,13 +25,20 @@ class _ListaPageState extends State<ListaPage> {
   String? _ordenarPorSelecionado;
   final List<String> _opcoesOrdenacao = ['Distância', 'Avaliação'];
   late Future<LocationData> _locationFuture;
+  late SnsRepository snsRepository;
+
+
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
+    final connectivityModule = Provider.of<ConnectivityModule>(context);
+    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
+    final locationModule = Provider.of<LocationModule>(context);
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     _searchController = TextEditingController();
     _focusNode = FocusNode();
-    final snsRepository = context.read<SnsRepository>();
     _locationFuture = snsRepository.locationModule.onLocationChanged().first;
   }
 
@@ -40,12 +51,11 @@ class _ListaPageState extends State<ListaPage> {
 
   Future<List<Hospital>> _carregarHospitaisComFiltros(
       double userLat, double userLon) async {
-    final snsRepository = context.read<SnsRepository>();
 
     List<Hospital> hospitais = await snsRepository.getAllHospitals();
 
     for (var hospital in hospitais) {
-      hospital.avaliacoes = await snsRepository.getEvaluationsByHospitalId(hospital.id);
+      hospital.reports = await snsRepository.getEvaluationsByHospitalId(hospital.id);
     }
 
     if (filtrarurgenciaAtiva) {
@@ -157,8 +167,6 @@ class _ListaPageState extends State<ListaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final snsRepository = context.read<SnsRepository>();
-
     return Scaffold(
       body: Column(
         children: [

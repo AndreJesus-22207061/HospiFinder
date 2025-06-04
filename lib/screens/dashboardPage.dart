@@ -1,5 +1,9 @@
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:prjectcm/connectivity_module.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
 import 'package:provider/provider.dart';
 
 import '../data/sns_repository.dart';
@@ -19,10 +23,18 @@ class _DashboardPageState extends State<DashboardPage> {
   late TextEditingController _searchController;
   late FocusNode _focusNode;
   late Future<Map<String, dynamic>> _dataFuture;
+  late SnsRepository snsRepository;
+
+
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
+    final connectivityModule = Provider.of<ConnectivityModule>(context);
+    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
+    final locationModule = Provider.of<LocationModule>(context);
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     _searchController = TextEditingController();
     _focusNode = FocusNode();
     _dataFuture = _loadAllData();
@@ -36,8 +48,6 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<Map<String, dynamic>> _loadAllData() async {
-    final snsRepository = Provider.of<SnsRepository>(context, listen: false);
-
     // Obter localização (aguarda o primeiro valor do stream)
     final locationData =
         await snsRepository.locationModule.onLocationChanged().first;
@@ -64,7 +74,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final snsRepository = Provider.of<SnsRepository>(context, listen: false);
 
     return GestureDetector(
       onTap: () {
@@ -257,8 +266,6 @@ class _DashboardPageState extends State<DashboardPage> {
             final hospital = hospitaisFiltrados[index];
             return GestureDetector(
               onTap: () {
-                final snsRepository =
-                    Provider.of<SnsRepository>(context, listen: false);
                 snsRepository.adicionarUltimoAcedido(hospital.id);
                 Navigator.push(
                   context,
@@ -350,7 +357,7 @@ class _DashboardPageState extends State<DashboardPage> {
               }
 
               // Attach avaliações dinamicamente
-              hospital.avaliacoes = snapshot.data ?? [];
+              hospital.reports = snapshot.data ?? [];
 
               final estrelas =
                   snsRepository.gerarEstrelasParaHospital(hospital);

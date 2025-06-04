@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
+import 'package:prjectcm/connectivity_module.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -8,15 +12,31 @@ import '../data/sns_repository.dart';
 import '../models/evaluation_report.dart'; // para formatar data
 //import 'package:prjectcm/theme.dart';
 
-class HospitalDetailPage extends StatelessWidget {
+class HospitalDetailPage extends StatefulWidget {
   final int hospitalId;
 
   const HospitalDetailPage({required this.hospitalId, super.key});
 
   @override
+  State<HospitalDetailPage> createState() => _HospitalDetailPageState();
+}
+
+class _HospitalDetailPageState extends State<HospitalDetailPage> {
+  late SnsRepository snsRepository;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
+    final connectivityModule = Provider.of<ConnectivityModule>(context);
+    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
+    final locationModule = Provider.of<LocationModule>(context);
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    //  final theme = Theme.of(context);
-    final snsRepository = context.read<SnsRepository>();
 
     return FutureBuilder<LocationData>(
       future: snsRepository.locationModule.onLocationChanged().first,
@@ -44,7 +64,7 @@ class HospitalDetailPage extends StatelessWidget {
         final userLon = location.longitude ?? 0;
 
         return FutureBuilder<Hospital>(
-          future: snsRepository.getHospitalDetailById(hospitalId),
+          future: snsRepository.getHospitalDetailById(widget.hospitalId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
@@ -84,7 +104,7 @@ class HospitalDetailPage extends StatelessWidget {
                 }
 
                 // Attach avaliações dinamicamente
-                hospital.avaliacoes = snapshot.data ?? [];
+                hospital.reports = snapshot.data ?? [];
 
                 final estrelas =
                     snsRepository.gerarEstrelasParaHospital(hospital);
@@ -384,8 +404,8 @@ class HospitalDetailPage extends StatelessWidget {
                                             fontWeight: FontWeight.bold,
                                             color: Colors.black))),
                                 SizedBox(height: 10),
-                                ...hospital.avaliacoes.isNotEmpty
-                                    ? hospital.avaliacoes
+                                ...hospital.reports.isNotEmpty
+                                    ? hospital.reports
                                         .asMap()
                                         .entries
                                         .map((entry) {
