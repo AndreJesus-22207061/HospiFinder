@@ -129,30 +129,27 @@ class _DashboardPageState extends State<DashboardPage> {
                       buildSearchResults(
                           context, hospitaisFiltrados, userLat, userLon),
                     if (_searchQuery.isEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Últimos Acedidos',
-                                style: Theme.of(context).textTheme.titleMedium),
-                            tuturialButton(
-                              context: context,
-                              onPressed: () => setState(() {}),
-                            ),
-                          ],
+                      if (ultimosAcedidos.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Últimos Acedidos',
+                                  style: Theme.of(context).textTheme.titleMedium),
+                            ],
+                          ),
                         ),
-                      ),
-                      buildHospitalList(
-                        context: context,
-                        hospitais: ultimosAcedidos,
-                        userLat: userLat,
-                        userLon: userLon,
-                        snsRepository: snsRepository,
-                        key: Key("last-visited-key"),
-                      ),
-                    ],
+                        buildHospitalList(
+                          context: context,
+                          hospitais: ultimosAcedidos,
+                          userLat: userLat,
+                          userLon: userLon,
+                          snsRepository: snsRepository,
+                          key: Key("last-visited-key"),
+                        ),
+                      ],
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 18, vertical: 1),
@@ -177,33 +174,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget tuturialButton({
-    required BuildContext context,
-    required VoidCallback onPressed,
-  }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 1),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.onSecondary,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.secondary,
-            width: 2,
-          ),
-        ),
-        child: Text(
-          'Tutorial',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.secondary,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget buildCabecalho(BuildContext context) {
     print('[DEBUG] Desenhei o cabeçalho');

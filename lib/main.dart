@@ -7,7 +7,7 @@ import 'package:prjectcm/theme.dart';
 import 'package:provider/provider.dart';
 
 import 'data/sqflite_sns_datasource.dart';
-import 'gps_location_module.dart';
+import 'service/gps_location_service.dart';
 import 'http/http_client.dart';
 import 'location_module.dart';
 
@@ -18,7 +18,7 @@ void main() async{
 
   final snsService = HttpSnsDataSource(client: HttpClient());
   final snsDataBase = SqfliteSnsDataSource();
-  final locationModule = GPSLocationModule();
+  final locationModule = GPSLocationService();
 
   // await snsDataBase.apagarBaseDeDados();
 

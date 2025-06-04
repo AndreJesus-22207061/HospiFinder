@@ -1,8 +1,8 @@
 import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'location_module.dart';
+import '../location_module.dart';
 
-class GPSLocationModule extends LocationModule {
+class GPSLocationService extends LocationModule {
   final Location _location = Location();
 
   @override
