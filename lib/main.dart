@@ -11,9 +11,20 @@ import 'data/sqflite_sns_datasource.dart';
 import 'service/gps_location_service.dart';
 import 'http/http_client.dart';
 import 'location_module.dart';
+import 'dart:io' as io;
 
+
+class _HttpOverrides extends io.HttpOverrides {
+  @override
+  io.HttpClient createHttpClient(io.SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (io.X509Certificate cert, String host, int port) => true;
+  }
+}
 
 void main() async{
+
+  io.HttpOverrides.global = _HttpOverrides();
 
   WidgetsFlutterBinding.ensureInitialized();
 
