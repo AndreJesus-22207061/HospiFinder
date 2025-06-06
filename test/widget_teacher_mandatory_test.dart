@@ -271,6 +271,7 @@ void runWidgetTests() {
 
     // it should show a snackbar telling a field is missing
     expect(find.byType(SnackBar), findsOneWidget);
+    await tester.pumpAndSettle(Duration(seconds: 5));
 
     ratingFormField.setValue(5);  // set the missing value now
 
