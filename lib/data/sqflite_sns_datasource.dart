@@ -52,7 +52,11 @@ class SqfliteSnsDataSource extends SnsDataSource {
   @override
   Future<void> attachEvaluation(int hospitalId, EvaluationReport report) async {
     try {
+      print('[DEBUG DB] Inserir avaliação na tabela "avaliacao":');
+      print(report.toDb()); // Mostra o mapa a ser inserido na DB
+
       await database!.insert('avaliacao', report.toDb());
+      print('[DEBUG DB] Inserção concluída com sucesso.');
     } catch (e) {
       print('Erro ao inserir avaliação: $e');
       rethrow;

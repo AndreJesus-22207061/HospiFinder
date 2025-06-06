@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 import 'package:prjectcm/connectivity_module.dart';
 import 'package:prjectcm/data/sns_datasource.dart';
 import 'package:prjectcm/data/sqflite_sns_datasource.dart';
@@ -24,6 +25,7 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<void> attachEvaluation(int hospitalId, EvaluationReport report) async {
+    print('[DEBUG REPO] Chamada attachEvaluation no repositório');
     await local.attachEvaluation(hospitalId, report);
   }
 
@@ -103,6 +105,32 @@ class SnsRepository extends SnsDataSource {
     } catch (e, stacktrace) {
       print('[ERROR] Falha ao obter avaliações para hospitalId=$hospitalId: $e');
       return [];
+    }
+  }
+
+  Future<LocationData?> obterLocation() async {
+    try {
+      print('[DEBUG] A obter localização...');
+
+      final stream = locationModule.onLocationChanged().timeout(Duration(seconds: 3));
+
+      // Usar await for para tentar pegar o primeiro valor se existir
+      await for (final location in stream) {
+        if (location.latitude != null && location.longitude != null) {
+          print('[DEBUG] Localização recebida: ${location.latitude}, ${location.longitude}');
+          return location;
+        } else {
+          print('[DEBUG] Localização inválida (lat/lon nulos)');
+          return null;
+        }
+      }
+
+      // Se sair do for sem emitir valores (stream vazia)
+      print('[DEBUG] Stream de localização vazia');
+      return null;
+    } catch (e) {
+      print('[DEBUG] Erro ao obter localização: $e');
+      return null;
     }
   }
 

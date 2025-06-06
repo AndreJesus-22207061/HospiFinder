@@ -47,25 +47,6 @@ class _ListaPageState extends State<ListaPage> {
     super.dispose();
   }
 
-  Future<LocationData?> _obterLocation() async {
-    try {
-      print('[DEBUG] A obter localização...');
-      final location = await snsRepository.locationModule.onLocationChanged()
-          .timeout(Duration(seconds: 3))
-          .first;
-
-      if (location.latitude != null && location.longitude != null) {
-        print('[DEBUG] Localização recebida: ${location.latitude}, ${location.longitude}');
-        return location;
-      } else {
-        print('[DEBUG] Localização inválida (lat/lon nulos)');
-        return null;
-      }
-    } catch (e) {
-      print('[DEBUG] Erro ao obter localização: $e');
-      return null;
-    }
-  }
 
   Future<List<Hospital>> _carregarHospitaisComFiltros(
       double? userLat, double? userLon) async {
@@ -259,7 +240,7 @@ class _ListaPageState extends State<ListaPage> {
           ),
           Expanded(
             child: FutureBuilder<LocationData?>(
-              future: _obterLocation(),
+              future: snsRepository.obterLocation(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return CircularProgressIndicator();
@@ -286,7 +267,7 @@ class _ListaPageState extends State<ListaPage> {
                           child: Text('Erro ao carregar hospitais: ${snapshot.error}'),
                         );
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(child: Text('Nenhum hospital registado.'));
+                        return Center(child: Text('Não foi possível obter os hospitais. Verifique a conectividade e volte a tentar'));
                       }
 
                       print('[DEBUG] FutureBuilder (hospitais): estado = ${snapshot.connectionState}');
@@ -374,7 +355,7 @@ class buildList extends StatelessWidget {
         final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
         final media =
             snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
-
+        print('[DEBUG LISTAPAGE] A desenhar HospitalBox para: ${hospital.name}');
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
           child: HospitalBox(

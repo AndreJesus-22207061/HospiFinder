@@ -50,6 +50,9 @@ class _HospitalBoxState extends State<HospitalBox> {
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('[DEBUG POSTFRAME] O widget hospital ${widget.hospital.name} foi renderizado');
+    });
     return Container(
       decoration: BoxDecoration(
         color: widget.boxColor,
@@ -84,6 +87,9 @@ Widget _hospitalListTile(
     String media,
     SnsRepository snsRepository, // NOVO parâmetro
     ) {
+  print('[DEBUG HOSPITALBOX TILE] Nome do hospital: ${hospital.name}');
+  print('[DEBUG HOSPITALBOX TILE] Media: $media');
+  print('[DEBUG HOSPITALBOX TILE] Estrelas: ${estrelas.length}');
   return ListTile(
     title: Text(
       hospital.name,

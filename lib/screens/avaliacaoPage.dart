@@ -406,12 +406,21 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
         notas: _notas,
       );
 
+      print('[DEBUG SUBMIT] Avaliação criada:');
+      print('ID: ${novaAvaliacao.id}');
+      print('Hospital ID: ${novaAvaliacao.hospitalId}');
+      print('Rating: ${novaAvaliacao.rating}');
+      print('Data/Hora: ${novaAvaliacao.dataHora}');
+      print('Notas: ${novaAvaliacao.notas}');
+
       await snsRepository.attachEvaluation(_selectedHospital!.id,novaAvaliacao);
 
       setState(() {
         _submitSucesso = true;
       });
+      print('[DEBUG SUBMIT] Avaliação submetida com sucesso.');
     } else {
+      print('[DEBUG SUBMIT] Falha na validação do formulário');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Preencha todos os campos obrigatórios!")),
       );
