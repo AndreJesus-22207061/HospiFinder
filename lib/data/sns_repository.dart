@@ -29,15 +29,24 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getAllHospitals() async {
-    if (await connectivityModule.checkConnectivity()) {
+    print('[DEBUG] Verificando conectividade...');
+    bool online = await connectivityModule.checkConnectivity();
+    print('[DEBUG] Está online? $online');
+
+    if (online) {
+      print('[DEBUG] Obtendo hospitais do remoto...');
       var hospitais = await remote.getAllHospitals();
+      print('[DEBUG] Hospitais recebidos do remoto: ${hospitais.length}');
 
       for (var hospital in hospitais) {
         local.insertHospital(hospital);
       }
       return hospitais;
     } else {
-      return await local.getAllHospitals();
+      print('[DEBUG] Offline, obtendo hospitais do local...');
+      var hospitaisLocais = await local.getAllHospitals();
+      print('[DEBUG] Hospitais recebidos do local: ${hospitaisLocais.length}');
+      return hospitaisLocais;
     }
   }
 
@@ -78,18 +87,23 @@ class SnsRepository extends SnsDataSource {
   }
 
   Future<List<EvaluationReport>> getEvaluationsByHospitalId(int hospitalId) async {
-    final db = local.database;
+    try {
+      final db = local.database;
+      if (db == null) {
+        print('[ERROR] Banco de dados é null');
+        return [];
+      }
 
-    if (db == null) {
-      throw Exception('Forgot to initialize the database?');
+      final result = await db.rawQuery(
+        'SELECT * FROM avaliacao WHERE hospitalId = ?',
+        [hospitalId.toString()],
+      );
+
+      return result.map((map) => EvaluationReport.fromDb(map)).toList();
+    } catch (e, stacktrace) {
+      print('[ERROR] Falha ao obter avaliações para hospitalId=$hospitalId: $e');
+      return [];
     }
-
-    final result = await db.rawQuery(
-      'SELECT * FROM avaliacao WHERE hospitalId = ?',
-      [hospitalId.toString()],
-    );
-
-    return result.map((map) => EvaluationReport.fromDb(map)).toList();
   }
 
 

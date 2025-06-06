@@ -51,9 +51,6 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
   @override
   Future<void> attachEvaluation(int hospitalId, EvaluationReport report) async {
-    if (database == null) {
-      throw Exception('Forgot to initialize the database?');
-    }
     try {
       await database!.insert('avaliacao', report.toDb());
     } catch (e) {
@@ -64,9 +61,6 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getAllHospitals() async{
-    if(database == null){
-      throw Exception('Forgot to initialize the database?');
-    }
     List result = await database!.rawQuery("SELECT * FROM hospital");
     return result.map((entry) => Hospital.fromDB(entry)).toList();
   }
@@ -76,9 +70,6 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
   @override
   Future<Hospital> getHospitalDetailById(int hospitalId) async{
-    if(database == null){
-      throw Exception('Forgot to initialize the database?');
-    }
     List result = await database!.rawQuery("SELECT * FROM hospital WHERE id = ?", [hospitalId]);
     if(result.isNotEmpty){
       return Hospital.fromDB(result.first);
@@ -101,10 +92,6 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
   @override
   Future<List<Hospital>> getHospitalsByName(String name) async{
-
-    if(database == null){
-      throw Exception('Forgot to initialize the database?');
-    }
     final queryLower = name.toLowerCase();
 
     final result = await database!.rawQuery(
@@ -123,10 +110,6 @@ class SqfliteSnsDataSource extends SnsDataSource {
 
   @override
   Future<void> insertHospital(Hospital hospital) async {
-    if (database == null) {
-      throw Exception('Database not initialized');
-    }
-
     try {
       await database!.insert(
         'hospital',

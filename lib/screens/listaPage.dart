@@ -24,7 +24,6 @@ class _ListaPageState extends State<ListaPage> {
   bool filtrarurgenciaAtiva = false;
   String? _ordenarPorSelecionado;
   final List<String> _opcoesOrdenacao = ['Distância', 'Avaliação'];
-  late Future<LocationData> _locationFuture;
   late SnsRepository snsRepository;
 
 
@@ -39,7 +38,6 @@ class _ListaPageState extends State<ListaPage> {
     snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     _searchController = TextEditingController();
     _focusNode = FocusNode();
-    _locationFuture = snsRepository.locationModule.onLocationChanged().first;
   }
 
   @override
@@ -49,8 +47,28 @@ class _ListaPageState extends State<ListaPage> {
     super.dispose();
   }
 
+  Future<LocationData?> _obterLocation() async {
+    try {
+      print('[DEBUG] A obter localização...');
+      final location = await snsRepository.locationModule.onLocationChanged()
+          .timeout(Duration(seconds: 3))
+          .first;
+
+      if (location.latitude != null && location.longitude != null) {
+        print('[DEBUG] Localização recebida: ${location.latitude}, ${location.longitude}');
+        return location;
+      } else {
+        print('[DEBUG] Localização inválida (lat/lon nulos)');
+        return null;
+      }
+    } catch (e) {
+      print('[DEBUG] Erro ao obter localização: $e');
+      return null;
+    }
+  }
+
   Future<List<Hospital>> _carregarHospitaisComFiltros(
-      double userLat, double userLon) async {
+      double? userLat, double? userLon) async {
 
     List<Hospital> hospitais = await snsRepository.getAllHospitals();
 
@@ -63,8 +81,10 @@ class _ListaPageState extends State<ListaPage> {
     }
 
     if (_ordenarPorSelecionado == 'Distância') {
-      hospitais =
-          snsRepository.ordenarListaPorDistancia(hospitais, userLat, userLon);
+      // Só ordena se userLat e userLon NÃO forem nulos
+      if (userLat != null && userLon != null) {
+        hospitais = snsRepository.ordenarListaPorDistancia(hospitais, userLat, userLon);
+      }
     } else if (_ordenarPorSelecionado == 'Avaliação') {
       hospitais = snsRepository.ordenarListaPorAvaliacao(hospitais);
     }
@@ -79,6 +99,7 @@ class _ListaPageState extends State<ListaPage> {
 
     return hospitais;
   }
+
 
   void _atualizarLista() {
     setState(() {});
@@ -172,7 +193,11 @@ class _ListaPageState extends State<ListaPage> {
         children: [
           Padding(
             padding: const EdgeInsets.only(
-                left: 15, right: 15, top: 35.0, bottom: 5),
+              left: 15,
+              right: 15,
+              top: 35.0,
+              bottom: 5,
+            ),
             child: TextField(
               controller: _searchController,
               focusNode: _focusNode,
@@ -182,11 +207,11 @@ class _ListaPageState extends State<ListaPage> {
                 labelStyle: TextStyle(fontSize: 14, color: Colors.black),
                 filled: true,
                 fillColor: Colors.white,
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
                 suffixIcon: Icon(Icons.search),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               ),
               onChanged: _aoMudarPesquisa,
             ),
@@ -233,42 +258,53 @@ class _ListaPageState extends State<ListaPage> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<LocationData>(
-              future: _locationFuture,
+            child: FutureBuilder<LocationData?>(
+              future: _obterLocation(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError || !snapshot.hasData) {
-                  return Center(child: Text('Erro ao obter localização.'));
-                }
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Erro a obter localização');
+                } else {
+                  print('[DEBUG] FutureBuilder (localização): estado = ${snapshot.connectionState}');
+                  if (snapshot.hasError) {
+                    print('[DEBUG] Erro ao obter localização: ${snapshot.error}');
+                  }
 
-                final location = snapshot.data!;
-                final userLat = location.latitude ?? 0;
-                final userLon = location.longitude ?? 0;
+                  final location = snapshot.data; // Pode ser null
+                  final double? userLat = location?.latitude;
+                  final double? userLon = location?.longitude;
 
-                return FutureBuilder<List<Hospital>>(
-                  future: _carregarHospitaisComFiltros(userLat, userLon),
-                  builder: (_, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    } else if (snapshot.hasError) {
-                      print(snapshot.error);
-                      return Center(
-                          child: Text(
-                              'Erro ao carregar hospitais: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('Nenhum hospital registado.'));
-                    }
+                  return FutureBuilder<List<Hospital>>(
+                    future: _carregarHospitaisComFiltros(userLat, userLon),
+                    builder: (_, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        print(snapshot.error);
+                        return Center(
+                          child: Text('Erro ao carregar hospitais: ${snapshot.error}'),
+                        );
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(child: Text('Nenhum hospital registado.'));
+                      }
 
-                    final hospitais = snapshot.data!;
+                      print('[DEBUG] FutureBuilder (hospitais): estado = ${snapshot.connectionState}');
+                      if (snapshot.hasError) {
+                        print('[DEBUG] Erro ao carregar hospitais: ${snapshot.error}');
+                      }
 
-                    return buildList(
+                      final hospitais = snapshot.data!;
+
+                      return buildList(
                         hospitais: hospitais,
                         snsRepository: snsRepository,
                         userLat: userLat,
-                        userLon: userLon);
-                  },
-                );
+                        userLon: userLon,
+                      );
+                    },
+                  );
+                }
               },
             ),
           ),
@@ -318,8 +354,8 @@ class buildList extends StatelessWidget {
 
   final List<Hospital> hospitais;
   final SnsRepository snsRepository;
-  final double userLat;
-  final double userLon;
+  final double? userLat;
+  final double? userLon;
 
   @override
   Widget build(BuildContext context) {

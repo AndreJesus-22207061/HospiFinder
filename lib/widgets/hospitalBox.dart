@@ -12,8 +12,8 @@ import '../data/sns_repository.dart';
 
 class HospitalBox extends StatefulWidget {
   final Hospital hospital;
-  final double userLat;
-  final double userLon;
+  final double? userLat;
+  final double? userLon;
   final Color boxColor;
   final List<Widget> estrelas;
   final String media;
@@ -78,8 +78,8 @@ class _HospitalBoxState extends State<HospitalBox> {
 Widget _hospitalListTile(
     BuildContext context,
     Hospital hospital,
-    double userLat,
-    double userLon,
+    double? userLat,
+    double? userLon,
     List<Widget> estrelas,
     String media,
     SnsRepository snsRepository, // NOVO parâmetro
@@ -161,12 +161,20 @@ Widget _hospitalAddressText(BuildContext context, String district, String addres
   );
 }
 
-Widget _hospitalKmText(BuildContext context, Hospital hospital, double userLat, double userLon) {
+Widget _hospitalKmText(BuildContext context, Hospital hospital, double? userLat, double? userLon) {
+  if (userLat == null || userLon == null) {
+    // Pode retornar um texto vazio, ou um placeholder pequeno
+    return Text(
+      '-', // ou 'Localização indisponível'
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.grey),
+    );
+  }
   return Text(
     hospital.distanciaFormatada(userLat, userLon),
     style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
   );
 }
+
 
 Widget _hospitalUrgencyWidget(BuildContext context, bool hasEmergency) {
   return Text(
