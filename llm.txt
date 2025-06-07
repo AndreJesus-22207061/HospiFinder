@@ -1,0 +1,438 @@
+LLM utilizado: ChatGPT
+
+Humano: Estou a trabalhar no meu projeto Flutter e tenho uma DashboardPage onde já estou a mostrar os hospitais mais próximos e os últimos acedidos. Agora queria adicionar uma barra de pesquisa para filtrar hospitais pelo nome, mas ainda não sei bem como começar, nunca fiz algo parecido em flutter.
+O meu dashboard atualmente está assim:
+
+import 'package:flutter/material.dart';
+import 'package:prjectcm/connectivity_module.dart';
+import 'package:prjectcm/data/http_sns_datasource.dart';
+import 'package:prjectcm/data/sqflite_sns_datasource.dart';
+import 'package:prjectcm/location_module.dart';
+import 'package:provider/provider.dart';
+
+import '../data/sns_repository.dart';
+import '../models/evaluation_report.dart';
+import '../models/hospital.dart';
+import 'package:prjectcm/widgets/hospitalBox.dart';
+
+import 'hospital_detail_page.dart';
+
+class DashboardPage extends StatefulWidget {
+  @override
+  _DashboardPageState createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  late Future<Map<String, dynamic>> _dataFuture;
+  late SnsRepository snsRepository;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final httpSnsDataSource = context.read<HttpSnsDataSource>();
+    final connectivityModule = context.read<ConnectivityModule>();
+    final sqfliteSnsDataSource = context.read<SqfliteSnsDataSource>();
+    final locationModule = context.read<LocationModule>();
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule, locationModule);
+    _dataFuture = _loadAllData();
+  }
+
+  Future<Map<String, dynamic>> _loadAllData() async {
+    final locationData = await snsRepository.locationModule.onLocationChanged().first;
+    final userLat = locationData.latitude;
+    final userLon = locationData.longitude;
+
+    if (userLat == null || userLon == null) {
+      throw Exception('Localização inválida');
+    }
+
+    final hospitais = await snsRepository.getAllHospitals();
+    final ultimosAcedidos = await snsRepository.listarUltimosAcedidos();
+
+    return {
+      'userLat': userLat,
+      'userLon': userLon,
+      'hospitais': hospitais,
+      'ultimosAcedidos': ultimosAcedidos,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          buildCabecalho(context),
+          FutureBuilder<Map<String, dynamic>>(
+            future: _dataFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Center(child: Text('Erro ao carregar dados: ${snapshot.error}')),
+                );
+              } else if (!snapshot.hasData) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Center(child: Text('Dados indisponíveis')),
+                );
+              }
+
+              final userLat = snapshot.data!['userLat'] as double;
+              final userLon = snapshot.data!['userLon'] as double;
+              final todosHospitais = snapshot.data!['hospitais'] as List<Hospital>;
+              final ultimosAcedidos = snapshot.data!['ultimosAcedidos'] as List<Hospital>;
+
+              final hospitaisMaisProximos = snsRepository.ordenarListaPorDistancia(todosHospitais, userLat, userLon);
+              final hospitaisMaisProximosTop3 = hospitaisMaisProximos.take(3).toList();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (ultimosAcedidos.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      child: Text('Últimos Acedidos', style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                  buildHospitalList(
+                    context: context,
+                    hospitais: ultimosAcedidos,
+                    userLat: userLat,
+                    userLon: userLon,
+                    snsRepository: snsRepository,
+                    key: Key("last-visited-key"),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 1),
+                    child: Text('Mais Próximos', style: Theme.of(context).textTheme.titleMedium),
+                  ),
+                  buildHospitalList(
+                    context: context,
+                    hospitais: hospitaisMaisProximosTop3,
+                    userLat: userLat,
+                    userLon: userLon,
+                    snsRepository: snsRepository,
+                    key: Key("Nearest-hospital-key"),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildCabecalho(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 22.0, right: 24.0, top: 32.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Bem vindo ao HospiFinder', style: Theme.of(context).textTheme.titleLarge),
+                SizedBox(height: 2),
+                Container(
+                  padding: EdgeInsets.all(1),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Aqui pode obter informações sobre os hospitais mais próximos de si',
+                    style: Theme.of(context).textTheme.titleSmall,
+                    textAlign: TextAlign.left,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: 2),
+          Image.asset('assets/images/HospifinderSemFundo.png', width: 70, height: 70),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHospitalList({
+    required BuildContext context,
+    required List<Hospital> hospitais,
+    required double userLat,
+    required double userLon,
+    required SnsRepository snsRepository,
+    Key? key,
+  }) {
+    return ListView.builder(
+      key: key,
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.only(left: 0, right: 0, top: 2.0),
+      itemCount: hospitais.length,
+      itemBuilder: (context, index) {
+        final hospital = hospitais[index];
+        final Color boxColor = index.isEven
+            ? Theme.of(context).colorScheme.primaryContainer
+            : Theme.of(context).colorScheme.secondaryContainer;
+
+        return FutureBuilder<List<EvaluationReport>>(
+          future: snsRepository.getEvaluationsByHospitalId(hospital),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: SizedBox(
+                  height: 100,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              );
+            } else if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: Text('Erro ao carregar avaliações'),
+              );
+            }
+
+            hospital.reports = snapshot.data ?? [];
+
+            final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
+            final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+              child: HospitalBox(
+                hospital: hospital,
+                userLat: userLat,
+                userLon: userLon,
+                boxColor: boxColor,
+                estrelas: estrelas,
+                media: media,
+                onTap: () {
+                  snsRepository.adicionarUltimoAcedido(hospital.id);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => HospitalDetailPage(hospitalId: hospital.id),
+                    ),
+                  ).then((_) => setState(() {}));
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+-------------------------------------------------------------------------------------------------
+
+
+ChatGPT:
+Ok! Podes tentar adicionar um TextField dentro do teu Scaffold, mas precisas também de criar um StreamBuilder com um StreamController para ouvir alterações no texto e aplicar o filtro. Algo assim:
+
+dart
+Copiar
+Editar
+StreamController<String> _searchStreamController = StreamController<String>();
+TextEditingController _controller = TextEditingController();
+
+Widget _buildSearchAndList() {
+  return Column(
+    children: [
+      TextField(
+        controller: _controller,
+        onChanged: (text) {
+          _searchStreamController.add(text);
+        },
+      ),
+      StreamBuilder<String>(
+        stream: _searchStreamController.stream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) return Container();
+          final query = snapshot.data!.toLowerCase();
+
+          // Aqui devia filtrar os hospitais, mas vamos supor que os tens numa lista chamada `allHospitals`
+          final filtered = allHospitals.where((h) => h.name.toLowerCase().contains(query)).toList();
+
+          return ListView.builder(
+            shrinkWrap: true,
+            itemCount: filtered.length,
+            itemBuilder: (context, index) => Text(filtered[index].name),
+          );
+        },
+      ),
+    ],
+  );
+}
+Podes tentar adaptar isso dentro do teu build() ou criar um novo widget específico para isso. 
+Não te esqueças de fechar o StreamController no dispose() também. 
+
+
+--------------------------------------------------------------------------------------------------------
+
+Humano: O que é que é o streamController e como é que se utiliza?
+
+
+-------------------------------------------------------------------------------------------------------
+
+ChatGPT:
+Claro! Um StreamController em Flutter é uma forma de criar um stream personalizado — ou seja, um canal por onde tu emites dados (neste caso, o texto digitado) e outros widgets (como o StreamBuilder) conseguem ouvir essas alterações e reagir a elas em tempo real.
+
+No exemplo que te dei:
+
+O TextField chama onChanged() sempre que o utilizador digita.
+
+Cada novo valor é adicionado ao StreamController com .add().
+
+O StreamBuilder ouve esse stream, e sempre que recebe um novo valor (ou seja, o texto do utilizador), ele reconstrói o widget com os dados filtrados.
+
+É uma abordagem mais reativa e escalável, muito usada em apps maiores ou com lógica mais complexa.
+
+
+----------------------------------------------------------------------------------------------------
+
+Humano: Consegues me fazer de uma forma diferente , eu vi um vídeo onde a pessoa utilizava TextEditingController normal e fazia o filtro com setState()
+
+
+--------------------------------------------------------------------------------------------
+
+Chatgpt: Perfeito. Para a barra de pesquisa funcionar, vais precisar de:
+
+Um TextEditingController para controlar o input do utilizador.
+
+Um campo String _searchQuery para guardar a pesquisa atual.
+
+Filtrar os hospitais dinamicamente com base nesse searchQuery.
+
+Vamos por partes. Primeiro, no teu State, adiciona isto:
+
+late TextEditingController _searchController;
+String _searchQuery = '';
+
+E inicializa o _searchController no initState ou didChangeDependencies:
+
+_searchController = TextEditingController();
+
+
+Não te esqueças de o limpar no dispose():
+
+@override
+void dispose() {
+  _searchController.dispose();
+  super.dispose();
+}
+
+-------------------------------------------------------------------------------------------------
+
+Humano: E agora como é que faço o widget da barra de pesquisa?
+
+
+-------------------------------------------------------------------------------------------------
+
+Chatgpt: Agora cria um método chamado buildSearchBar() que retorna um TextField com o _searchController. Assim:
+
+Widget buildSearchBar(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(16.0),
+    child: TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        labelText: 'Procurar hospital',
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+        suffixIcon: Icon(Icons.search),
+      ),
+      onChanged: (value) {
+        setState(() {
+          _searchQuery = value;
+        });
+      },
+    ),
+  );
+}
+
+
+Depois, chama esse método dentro do teu build() antes da lista de hospitais:
+
+return Column(
+  children: [
+    buildSearchBar(context),
+    // resto da UI
+  ],
+);
+
+-------------------------------------------------------------------------------------------------------
+
+Humano: Mas agora como é que faço para filtrar os hospitais e me aparecer uma caixa em baixo com a lista de hospitais filtrados ?
+
+
+-------------------------------------------------------------------------------------------------------
+
+Chatgpt: 
+
+Widget buildSearchResults(List<Hospital> hospitais) {
+  return ListView.builder(
+    shrinkWrap: true,
+    itemCount: hospitais.length,
+    itemBuilder: (context, index) {
+      final hospital = hospitais[index];
+      return ListTile(
+        title: Text(hospital.name),
+        onTap: () {
+          // lógica para navegar para detalhes do hospital
+        },
+      );
+    },
+  );
+}
+
+E no build() fazes:
+
+
+return Column(
+  children: [
+    buildSearchBar(context),
+    buildSearchResults(hospitaisFiltrados),
+  ],
+);
+
+
+------------------------------------------------------------------------------------------------------
+
+Humano: Está quase pronto mas tenho uma pergunta como é que eu faço para que o filtro ignore os acentos no caso do utilizador escrever sem acento ?
+
+------------------------------------------------------------------------------------------------------
+
+Chatgpt: Boa observação! Para isso podes usar o pacote diacritic para remover acentos antes da comparação.
+
+Adiciona no pubspec.yaml:
+
+diacritic: ^0.1.3
+
+E depois importa:
+
+import 'package:diacritic/diacritic.dart';
+
+E muda o filtro para isto:
+
+final queryNormalizada = removeDiacritics(_searchQuery.toLowerCase());
+
+final hospitaisFiltrados = hospitais.where((hospital) {
+  final nomeNormalizado = removeDiacritics(hospital.name.toLowerCase());
+  return nomeNormalizado.contains(queryNormalizada);
+}).toList();
+
+Assim a pesquisa fica muito mais tolerante a erros de acentuação.
+
+
+-----------------------------------------------------------------------------------------------------
+
+CONCLUSÃO DO GRUPO: Optámos pela segunda opção, usando o TextEditingController e setState, porque é mais simples e intuitiva. Além disso, já tínhamos visto um vídeo onde usavam exatamente isso, o que ajudou bastante.
