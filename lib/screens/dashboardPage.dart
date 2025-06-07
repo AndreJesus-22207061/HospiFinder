@@ -358,8 +358,8 @@ class _DashboardPageState extends State<DashboardPage> {
               // Attach avaliações dinamicamente
               hospital.reports = snapshot.data ?? [];
 
-             // final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
-             // final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+             final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
+             final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
 
               return Padding(
                 padding:
@@ -369,8 +369,8 @@ class _DashboardPageState extends State<DashboardPage> {
                   userLat: userLat,
                   userLon: userLon,
                   boxColor: boxColor,
-                 // estrelas: estrelas,
-                 // media: media,
+                 estrelas: estrelas,
+                 media: media,
                   onTap: () {
                     snsRepository.adicionarUltimoAcedido(hospital.id);
                     Navigator.push(

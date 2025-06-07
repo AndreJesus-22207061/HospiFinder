@@ -79,10 +79,8 @@ class _HospitalDetailPageState extends State<HospitalDetailPage> {
                       '[DEBUG] Avaliação #$i: rating=${hospital.reports[i].rating}, data=${hospital.reports[i].dataHora}, notas=${hospital.reports[i].notas}');
                 }
 
-                final estrelas =
-                    snsRepository.gerarEstrelasParaHospital(hospital);
-                final media =
-                    snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+                final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
+                final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
                 return Scaffold(
                   appBar: AppBar(title: Text(hospital.name)),
                   body: SingleChildScrollView(

@@ -48,11 +48,11 @@ class _ListaPageState extends State<ListaPage> {
 
     List<Hospital> hospitais = await snsRepository.getAllHospitals();
 
-    /*
+
     for (var hospital in hospitais) {
       hospital.reports = await snsRepository.getEvaluationsByHospitalId(hospital);
     }
-    */
+
 
     if (filtrarurgenciaAtiva) {
       hospitais = snsRepository.filtrarHospitaisComUrgencia(hospitais);
@@ -354,8 +354,8 @@ class buildList extends StatelessWidget {
             : Theme.of(context).colorScheme.secondaryContainer;
 
 
-       // final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
-       // final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
+        final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
+        final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
         print('[DEBUG LISTAPAGE] A desenhar HospitalBox para: ${hospital.name}');
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
@@ -364,8 +364,8 @@ class buildList extends StatelessWidget {
             userLat: userLat,
             userLon: userLon,
             boxColor: boxColor,
-            //estrelas: estrelas,
-            //media: media,
+            estrelas: estrelas,
+            media: media,
             onTap: () {
               snsRepository.adicionarUltimoAcedido(hospital.id);
               Navigator.push(
