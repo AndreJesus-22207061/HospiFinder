@@ -31,11 +31,6 @@ class _ListaPageState extends State<ListaPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
-    final connectivityModule = Provider.of<ConnectivityModule>(context);
-    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
-    final locationModule = Provider.of<LocationModule>(context);
-    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     _searchController = TextEditingController();
     _focusNode = FocusNode();
   }
@@ -54,7 +49,7 @@ class _ListaPageState extends State<ListaPage> {
     List<Hospital> hospitais = await snsRepository.getAllHospitals();
 
     for (var hospital in hospitais) {
-      hospital.reports = await snsRepository.getEvaluationsByHospitalId(hospital.id);
+      hospital.reports = await snsRepository.getEvaluationsByHospitalId(hospital);
     }
 
     if (filtrarurgenciaAtiva) {
@@ -169,6 +164,11 @@ class _ListaPageState extends State<ListaPage> {
 
   @override
   Widget build(BuildContext context) {
+    final httpSnsDataSource = context.read<HttpSnsDataSource>();
+    final connectivityModule = context.read<ConnectivityModule>();
+    final sqfliteSnsDataSource = context.read<SqfliteSnsDataSource>();
+    final locationModule = context.read<LocationModule>();
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     return Scaffold(
       body: Column(
         children: [

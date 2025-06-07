@@ -27,10 +27,10 @@ class _MapaPageState extends State<MapaPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
-    final connectivityModule = Provider.of<ConnectivityModule>(context);
-    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
-    final locationModule = Provider.of<LocationModule>(context);
+    final httpSnsDataSource = context.read<HttpSnsDataSource>();
+    final connectivityModule = context.read<ConnectivityModule>();
+    final sqfliteSnsDataSource = context.read<SqfliteSnsDataSource>();
+    final locationModule = context.read<LocationModule>();
     snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       listenToLocationUpdates();

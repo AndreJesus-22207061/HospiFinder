@@ -129,6 +129,19 @@ class SqfliteSnsDataSource extends SnsDataSource {
     }
   }
 
+  @override
+  Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital) async{
+    if(database == null){
+      return [];
+    }
+
+      final result = await database!.rawQuery(
+        'SELECT * FROM avaliacao WHERE hospitalId = ?',
+        [hospital.id.toString()],
+      );
+
+      return result.map((map) => EvaluationReport.fromDb(map)).toList();
+  }
 
 
 //devem apenas implementar aqui só e apenas os métodos da classe abstrata
@@ -137,6 +150,8 @@ class SqfliteSnsDataSource extends SnsDataSource {
     await deleteDatabase(caminho);
     print('Base de dados apagada com sucesso.');
   }
+
+
 
 
 

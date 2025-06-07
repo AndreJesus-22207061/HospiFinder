@@ -7,7 +7,6 @@ import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:prjectcm/models/waiting_time.dart';
-import 'package:prjectcm/service/connectivity_service.dart';
 import 'http_sns_datasource.dart';
 
 
@@ -41,7 +40,7 @@ class SnsRepository extends SnsDataSource {
       print('[DEBUG] Hospitais recebidos do remoto: ${hospitais.length}');
 
       for (var hospital in hospitais) {
-        local.insertHospital(hospital);
+        await local.insertHospital(hospital);
       }
       return hospitais;
     } else {
@@ -54,11 +53,18 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<Hospital> getHospitalDetailById(int hospitalId) async {
-    if(await connectivityModule.checkConnectivity()){
-      return await remote.getHospitalDetailById(hospitalId);
-    }else{
-      return await local.getHospitalDetailById(hospitalId);
+    Hospital hospital;
+
+    if (await connectivityModule.checkConnectivity()) {
+      hospital = await remote.getHospitalDetailById(hospitalId);
+    } else {
+      hospital = await local.getHospitalDetailById(hospitalId);
     }
+
+    final avaliacoes = await getEvaluationsByHospitalId(hospital);
+    hospital.reports = avaliacoes;
+
+    return hospital;
   }
 
   @override
@@ -88,23 +94,12 @@ class SnsRepository extends SnsDataSource {
     throw Exception('Not available');
   }
 
-  Future<List<EvaluationReport>> getEvaluationsByHospitalId(int hospitalId) async {
+  @override
+  Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital) async {
     try {
-      final db = local.database;
-      if (db == null) {
-        print('[ERROR] Banco de dados é null');
-        return [];
-      }
-
-      final result = await db.rawQuery(
-        'SELECT * FROM avaliacao WHERE hospitalId = ?',
-        [hospitalId.toString()],
-      );
-
-      return result.map((map) => EvaluationReport.fromDb(map)).toList();
+      return local.getEvaluationsByHospitalId(hospital);
     } catch (e, stacktrace) {
-      print('[ERROR] Falha ao obter avaliações para hospitalId=$hospitalId: $e');
-      return [];
+      return hospital.reports;
     }
   }
 

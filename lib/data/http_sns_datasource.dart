@@ -75,6 +75,11 @@ class HttpSnsDataSource extends SnsDataSource {
     throw Exception('Not available');
   }
 
+  @override
+  Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital) async{
+    throw Exception('Not available');
+  }
+
 
 // devem apenas implementar aqui só e apenas os métodos da classe abstrata
 }

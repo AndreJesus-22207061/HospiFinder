@@ -68,7 +68,9 @@ class _MyAppState extends State<MyApp> {
     final hospitalDatabase = context.read<SqfliteSnsDataSource>();
 
     return FutureBuilder(
-        future: hospitalDatabase.init(),
+        future: Future.wait<dynamic>([
+          hospitalDatabase.init(),
+        ]),
         builder: (_, snapshot) {
           if (snapshot.connectionState == ConnectionState.done){
             return MaterialApp(

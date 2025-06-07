@@ -30,10 +30,10 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
-    final connectivityModule = Provider.of<ConnectivityModule>(context);
-    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
-    final locationModule = Provider.of<LocationModule>(context);
+    final httpSnsDataSource = context.read<HttpSnsDataSource>();
+    final connectivityModule = context.read<ConnectivityModule>();
+    final sqfliteSnsDataSource = context.read<SqfliteSnsDataSource>();
+    final locationModule = context.read<LocationModule>();
     snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     _searchController = TextEditingController();
     _focusNode = FocusNode();
@@ -74,7 +74,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return GestureDetector(
       onTap: () {
         _focusNode.unfocus();
@@ -339,7 +338,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
 
           return FutureBuilder<List<EvaluationReport>>(
-            future: snsRepository.getEvaluationsByHospitalId(hospital.id),
+            future: snsRepository.getEvaluationsByHospitalId(hospital),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Padding(

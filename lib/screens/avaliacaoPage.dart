@@ -37,10 +37,10 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final httpSnsDataSource = Provider.of<HttpSnsDataSource>(context);
-    final connectivityModule = Provider.of<ConnectivityModule>(context);
-    final sqfliteSnsDataSource = Provider.of<SqfliteSnsDataSource>(context);
-    final locationModule = Provider.of<LocationModule>(context);
+    final httpSnsDataSource = context.read<HttpSnsDataSource>();
+    final connectivityModule = context.read<ConnectivityModule>();
+    final sqfliteSnsDataSource = context.read<SqfliteSnsDataSource>();
+    final locationModule = context.read<LocationModule>();
     snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
     _futureHospitais = snsRepository.getAllHospitals();
     _selectedDate = DateTime.now();
