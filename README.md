@@ -35,7 +35,7 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 ![Avaliação](assets/screens/avaliacaoPage.png)
 
-### 🗺️ Mapa (sem funcionalidades ativas)
+### 🗺️ Mapa
 
 ![Mapa](assets/screens/mapa.png)
 
