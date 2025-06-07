@@ -58,6 +58,7 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 ### 🏥 DetalhesHospitalPage
 - Visualização de informações completas sobre um hospital;
+- Vizualização dos tempos de espera de diferentes tipos de urgência;
 - Listagem das **avaliações existentes** do hospital.
 
 ### ✍️ AvaliacaoPage
@@ -81,15 +82,6 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 ---
 
-## 📚 Fontes de Informação
-
-Durante o desenvolvimento da aplicação, foram consultadas diversas fontes externas para auxiliar na implementação de funcionalidades que não foram abordadas diretamente nas aulas ou nos vídeos fornecidos. Abaixo estão listadas algumas dessas fontes:
-
-- [YouTube – Flutter Google Maps Tutorial](https://youtu.be/M7cOmiSly3Q?si=50yc7vlakMaxRz3Z) – Tutorial utilizado para a **implementação do mapa com marcadores** usando o `google_maps_flutter`;
-- 
-
----
-
 ## 🎥 Vídeo de Apresentação
 
 A apresentação da aplicação, demonstrando as principais funcionalidades, pode ser visualizada no seguinte vídeo:
@@ -108,15 +100,157 @@ A apresentação da aplicação, demonstrando as principais funcionalidades, pod
 
 Nesta secção serão indicadas e descritas as classes responsáveis pela lógica da aplicação, incluindo o nome das classes, seus métodos principais e os atributos mais relevantes.
 
-<!-- Exemplo:
-### NomeDaClasse
+---
+
+### 📘 `EvaluationReport`
+
+Classe responsável por representar uma avaliação feita a um hospital.
+
 - **Atributos:**
-  - atributo1: tipo
-  - atributo2: tipo
+  - `id` (`String`) – Identificador único da avaliação.
+  - `hospitalId` (`int`) – ID do hospital a que a avaliação pertence.
+  - `rating` (`int`) – Avaliação em estrelas (1 a 5).
+  - `dataHora` (`DateTime`) – Data e hora da avaliação.
+  - `notas` (`String?`) – Campo opcional para comentários adicionais.
+
 - **Métodos:**
-  - metodo1(parâmetros): descrição do que faz
-  - metodo2(parâmetros): descrição do que faz
--->
+  - `toDb()` – Converte o objeto para um mapa (`Map<String, dynamic>`) para ser guardado na base de dados.
+  - `fromDb(Map<String, dynamic> map)` – Cria uma instância da classe a partir de dados vindos da base de dados.
+
+---
+
+### 🏥 `Hospital`
+
+Classe que representa um hospital e inclui os dados básicos, bem como uma lista de avaliações associadas.
+
+- **Atributos:**
+  - `id` (`int`) – Identificador único do hospital.
+  - `name` (`String`) – Nome do hospital.
+  - `latitude` (`double`) – Coordenada geográfica (latitude).
+  - `longitude` (`double`) – Coordenada geográfica (longitude).
+  - `address` (`String`) – Morada do hospital.
+  - `phoneNumber` (`int`) – Número de telefone.
+  - `email` (`String`) – E-mail de contacto.
+  - `district` (`String`) – Distrito onde se localiza.
+  - `hasEmergency` (`bool`) – Indica se o hospital tem serviço de urgência.
+  - `reports` (`List<EvaluationReport>`) – Lista de avaliações feitas ao hospital.
+
+- **Métodos:**
+  - `fromJSON(Map<String, dynamic> json)` – Cria uma instância a partir dos dados vindos da API.
+  - `fromDB(Map<String, dynamic> db)` – Cria uma instância a partir dos dados da base de dados local.
+  - `toDb()` – Converte o objeto para um mapa para armazenamento na base de dados.
+  - `distanciaKm(minhaLat, minhaLon)` – Calcula a distância entre o utilizador e o hospital (em km).
+  - `distanciaFormatada(minhaLat, minhaLon)` – Devolve a distância em formato legível (`"300 m"` ou `"2.3 km"`).
+
+---
+
+### ⏱️ `WaitingTime`
+
+Mini descrição bla bla bla bla bla
+
+- **Atributos:**
+  - `sasasa`
+  - `sasasa`
+  - `sasasa`
+  - `sasasa`
+  - `sasasa`
+
+- **Métodos:**
+  - `sasasa`
+  - `sasasa`
+  - `sasasa`
+  - `sasasa`
+
+---
+
+### 🛠️ `SnsDataSource` (Interface Abstrata)
+
+Define a interface base para acesso aos dados relacionados com hospitais, avaliações e tempos de espera.
+
+**Métodos abstratos:**
+
+- `Future<void> insertHospital(Hospital hospital)`  
+  Insere um hospital na fonte de dados.
+
+- `Future<List<Hospital>> getAllHospitals()`  
+  Retorna a lista de todos os hospitais.
+
+- `Future<List<Hospital>> getHospitalsByName(String name)`  
+  Pesquisa e retorna hospitais cujo nome contenha a string fornecida.
+
+- `Future<Hospital> getHospitalDetailById(int hospitalId)`  
+  Obtém o detalhe completo de um hospital pelo seu ID.
+
+- `Future<void> attachEvaluation(int hospitalId, EvaluationReport report)`  
+  Associa uma avaliação a um hospital específico.
+
+- `Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId)`  
+  Obtém os tempos de espera registados para um hospital.
+
+- `Future<void> insertWaitingTime(int hospitalId, dynamic waitingTime)`  
+  Insere um tempo de espera para um hospital.
+
+- `Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital)`  
+  Obtém as avaliações associadas a um hospital.
+
+---
+
+### ⚙️ `HttpSnsDataSource`
+
+Implementa a interface `SnsDataSource` com acesso a dados remotos via API HTTP.
+
+- Utiliza a API pública do Ministério da Saúde para obter a lista de hospitais.
+- Métodos que modificam dados (`insertHospital`, `attachEvaluation`, etc.) não estão disponíveis e lançam exceção.
+- Métodos implementados:
+  - `getAllHospitals()`
+  - `getHospitalDetailById(int hospitalId)`
+  - `getHospitalsByName(String name)`
+
+Métodos relacionados com avaliação e tempos de espera ainda não implementados (`UnimplementedError`).
+
+---
+
+### 🧱 `SqfliteSnsDataSource`
+
+Implementa a interface `SnsDataSource` usando uma base de dados local SQLite.
+
+- Cria e gerencia as tabelas `hospital` e `avaliacao`.
+- Permite inserção e recuperação de hospitais e avaliações localmente.
+- Métodos implementados:
+  - `init()` — inicializa a base de dados.
+  - `insertHospital(Hospital hospital)`
+  - `getAllHospitals()`
+  - `getHospitalDetailById(int hospitalId)`
+  - `getHospitalsByName(String name)`
+  - `attachEvaluation(int hospitalId, EvaluationReport report)`
+  - `getEvaluationsByHospitalId(Hospital hospital)`
+- Métodos para tempos de espera ainda não implementados.
+
+---
+
+### 📦 `SnsRepository`
+
+Classe repositório que combina as fontes de dados local (`SqfliteSnsDataSource`) e remota (`HttpSnsDataSource`) e decide qual usar conforme a conectividade.
+
+- Verifica se o dispositivo está online para decidir entre usar dados remotos ou locais.
+- Atualiza a base de dados local com dados remotos para cache e acesso offline.
+- Implementa funcionalidades adicionais:
+  - Gestão da lista dos últimos hospitais acedidos.
+  - Filtragem e ordenação de hospitais (por distância, por avaliação, presença de urgência).
+  - Geração de widgets para visualização de avaliação com estrelas.
+  - Obtenção da localização atual do utilizador.
+- Métodos implementados:
+  - Todos os definidos na interface `SnsDataSource`.
+- Métodos para tempos de espera ainda não implementados.
+
+---
+
+## 📚 Fontes de Informação
+
+Durante o desenvolvimento da aplicação, foram consultadas diversas fontes externas para auxiliar na implementação de funcionalidades que não foram abordadas diretamente nas aulas ou nos vídeos fornecidos. Abaixo estão listadas algumas dessas fontes:
+
+- [YouTube – Flutter Google Maps Tutorial](https://youtu.be/M7cOmiSly3Q?si=50yc7vlakMaxRz3Z) – Tutorial utilizado para a **implementação do mapa com marcadores** usando o `google_maps_flutter`;
+-
 
 ---
 
