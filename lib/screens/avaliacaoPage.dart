@@ -61,62 +61,69 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
             return Center(child: Text('Nenhum hospital disponível.'));
           }
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 22.0, right: 24.0, top: 32.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    FutureBuilder<List<Hospital>>(
-                      future: _futureHospitais,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Text(
-                              'Erro ao carregar hospitais: ${snapshot.error}');
-                        } else if (!snapshot.hasData ||
-                            snapshot.data!.isEmpty) {
-                          return Text('Nenhum hospital encontrado.');
-                        }
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 32.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Campos do formulário agrupados aqui
+                            Column(
+                              children: [
+                                SizedBox(height: 10),
+                                _buildHospitalFormField(snapshot.data!),
+                                SizedBox(height: 32),
+                                _buildAvaliacaoFormField(),
+                                SizedBox(height: 32),
+                                _buildDateFormField(),
+                                SizedBox(height: 32),
+                                _buildNotasFormField(),
+                              ],
+                            ),
 
-                        return _buildHospitalFormField(snapshot.data!);
-                      },
+                            // Botão colado ao fundo
+                            Column(
+                              children: [
+                                SizedBox(height: 32),
+                                ElevatedButton(
+                                  key: Key('evaluation-form-submit-button'),
+                                  onPressed: _submit,
+                                  style: ElevatedButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.blue,
+                                    minimumSize: Size(158, 48),
+                                  ),
+                                  child: Text(
+                                    "Submeter",
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                if (_submitSucesso)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 12.0),
+                                    child: Text(
+                                      "Submetido com Sucesso",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold, color: Colors.black),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    SizedBox(height: 16),
-                    _buildAvaliacaoFormField(),
-                    SizedBox(height: 16),
-                    _buildDateFormField(),
-                    SizedBox(height: 16),
-                    _buildNotasFormField(),
-                    SizedBox(height: 9),
-                    ElevatedButton(
-                      key: Key('evaluation-form-submit-button'),
-                      onPressed: _submit,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.blue,
-                        minimumSize:
-                            Size(150, 48), // largura mínima 200, altura 48
-                      ),
-                      child: Text(
-                        "Submeter",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    if (_submitSucesso)
-                      Text(
-                        "Submetido com Sucesso",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),
