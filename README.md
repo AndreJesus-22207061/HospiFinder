@@ -21,11 +21,11 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 ### 📊 Dashboard
 
-![Dashboard](assets/screens/dashBoardPage.png)
+![Dashboard](assets/screens/dashboard.png)
 
 ### 📋 Lista de Hospitais
 
-![Lista](assets/screens/listaPage.png)
+![Lista](assets/screens/lista.png)
 
 ### 🏥 Detalhes do Hospital
 
@@ -33,7 +33,7 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 ### 🌟 Avaliação
 
-![Avaliação](assets/screens/avaliacaoPage.png)
+![Avaliação](assets/screens/avaliacao.png)
 
 ### 🗺️ Mapa
 
