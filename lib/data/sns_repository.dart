@@ -96,11 +96,10 @@ class SnsRepository extends SnsDataSource {
 
   @override
   Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital) async {
-    try {
-      return local.getEvaluationsByHospitalId(hospital);
-    } catch (e, stacktrace) {
+    if(local.database == null){
       return hospital.reports;
     }
+      return local.getEvaluationsByHospitalId(hospital);
   }
 
   Future<LocationData?> obterLocation() async {

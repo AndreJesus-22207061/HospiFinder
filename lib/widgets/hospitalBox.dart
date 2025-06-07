@@ -15,8 +15,8 @@ class HospitalBox extends StatefulWidget {
   final double? userLat;
   final double? userLon;
   final Color boxColor;
-  final List<Widget> estrelas;
-  final String media;
+  //final List<Widget> estrelas;
+  //final String media;
   final VoidCallback onTap;
 
   const HospitalBox({
@@ -25,8 +25,8 @@ class HospitalBox extends StatefulWidget {
     required this.userLat,
     required this.userLon,
     required this.boxColor,
-    required this.estrelas,
-    required this.media,
+    //required this.estrelas,
+    // required this.media,
     required this.onTap,
   });
 
@@ -72,7 +72,7 @@ class _HospitalBoxState extends State<HospitalBox> {
       child: Padding(
         padding: const EdgeInsets.only(
             left: 8.0, right: 0.0, top: 6.0, bottom: 6.0),
-        child: _hospitalListTile(context, widget.hospital, widget.userLat, widget.userLon , widget.estrelas , widget.media , snsRepository),
+        child: _hospitalListTile(context, widget.hospital, widget.userLat, widget.userLon /* widget.estrelas , widget.media  */, snsRepository),
       ),
     );
   }
@@ -83,13 +83,13 @@ Widget _hospitalListTile(
     Hospital hospital,
     double? userLat,
     double? userLon,
-    List<Widget> estrelas,
-    String media,
+    //List<Widget> estrelas,
+    //String media,
     SnsRepository snsRepository, // NOVO parâmetro
     ) {
   print('[DEBUG HOSPITALBOX TILE] Nome do hospital: ${hospital.name}');
-  print('[DEBUG HOSPITALBOX TILE] Media: $media');
-  print('[DEBUG HOSPITALBOX TILE] Estrelas: ${estrelas.length}');
+  //print('[DEBUG HOSPITALBOX TILE] Media: $media');
+  //print('[DEBUG HOSPITALBOX TILE] Estrelas: ${estrelas.length}');
   return ListTile(
     title: Text(
       hospital.name,
@@ -99,7 +99,7 @@ Widget _hospitalListTile(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(height: 4),
-        Row(
+       /* Row(
           children: [
             Text(
               media,
@@ -111,7 +111,7 @@ Widget _hospitalListTile(
             SizedBox(width: 6),
             ...estrelas,
           ],
-        ),
+        ),*/
         SizedBox(height: 6),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
