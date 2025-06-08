@@ -85,26 +85,28 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 A apresentação da aplicação, demonstrando as principais funcionalidades, pode ser visualizada no seguinte vídeo:
 
-🔗 [HospiFinder](AQUI_COLOCAR_O_LINK)
+🔗 [Video Apesentação HospiFinder](https://youtu.be/pEKdrLqdoxg)
 
 ---
 
 ## 🏗️ Arquitetura da Aplicação
 
-A arquitetura da aplicação foi desenhada com o objetivo de garantir manutenibilidade, escalabilidade e uma separação clara de responsabilidades. Para isso, optámos por uma abordagem baseada nos princípios MVVM (Model–View–ViewModel) de forma adaptada, aliando-a ao uso de repositórios, fontes de dados desacopladas e gestão de estado leve através de widgets reativos como FutureBuilder e StreamBuilder.
+A arquitetura da aplicação foi desenhada com o objetivo de garantir manutenibilidade, escalabilidade e uma separação clara de responsabilidades. Para isso, optámos por utilizar repositórios, fontes de dados desacopladas e gestão de estado leve através de widgets reativos como FutureBuilder e StreamBuilder.
 
 ### 📁 Estrutura Modular
 A aplicação foi organizada em pastas temáticas, com separação clara entre:
 
 models/ – Definição das classes de domínio, como Hospital, EvaluationReport e WaitingTime.
 
-pages/ – Implementação das várias interfaces (UI) da aplicação, organizadas por ecrã (Dashboard, Lista, Avaliação, etc.).
+http/ - 
 
 data/ – Contém os ficheiros relacionados com acesso a dados, como HttpSnsDataSource, SqfliteSnsDataSource e SnsRepository.
 
-utils/ – Funções e classes auxiliares reutilizáveis (ex: formatações, cálculos de distância).
+screens/ – Implementação das várias interfaces (UI) da aplicação, organizadas por ecrã (Dashboard, Lista, Avaliação, etc.).
 
-widgets/ – Componentes reutilizáveis da interface, como estrelas de avaliação.
+service/ - 
+
+widgets/ – Componentes reutilizáveis da interface, como caixa de hospital.
 
 Esta estrutura facilita a localização e reutilização de código, bem como a integração futura de novas funcionalidades.
 
