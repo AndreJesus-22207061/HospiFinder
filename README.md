@@ -159,7 +159,30 @@ A aplicação foi concebida com a filosofia offline-first, garantindo que o util
 
 Esta abordagem assegura uma experiência de utilização contínua e fiável, mesmo em ambientes com conectividade instável.
 
+###✨ Destaques da Arquitetura
+A arquitetura da aplicação destaca-se por várias decisões técnicas que melhoram a organização, manutenibilidade, reutilização e performance do código. Estes são alguns dos aspetos mais relevantes:
 
+####♻️ Reutilização e Polimorfismo
+- Componente HospitalBox reutilizável
+  Foi criado um widget personalizado chamado HospitalBox, usado tanto na página de Dashboard como nas Listas. Esta abordagem evita repetição de código e permite centralizar as alterações visuais ou comportamentais do componente hospitalar num único local.
+
+- Utilização de um ficheiro theme.dart personalizado
+  A aplicação define um tema global com uma paleta de cores e tamanhos de texto consistentes. Isto facilita alterações globais de estilo, melhora a coerência visual e promove o polimorfismo visual, permitindo que múltiplos componentes usem os mesmos estilos com comportamentos diferentes.
+
+####🧩 Organização Modular da Interface
+- Separação da lógica da UI em widgets personalizados
+  Em vez de manter toda a lógica visual dentro dos ficheiros principais das páginas (screens), foram criados widgets internos e auxiliares. Isto torna o código mais limpo, mais fácil de manter e mais modular, permitindo reestruturações locais sem afetar a totalidade da página.
+
+####🧠 Encapsulamento de Lógica nos Modelos
+- Métodos específicos dentro das classes Hospital e EvaluationReport
+  A lógica relacionada com cada entidade foi colocada nas respetivas classes (ex: métodos como mediaAvaliacoes() ou gerarEstrelasParaHospital()), promovendo o encapsulamento e mantendo a responsabilidade no objeto certo.
+
+####🚀 Otimizações de Performance
+- Chamadas à API apenas quando necessário
+  A aplicação evita chamadas desnecessárias à API. Por exemplo, os tempos de espera não são associados a hospitais nas páginas onde essa informação não é relevante, como o Dashboard. Esta decisão reduz o uso de rede e melhora o tempo de carregamento.
+
+- Geolocalização apenas no início de cada página
+  A localização do utilizador é obtida apenas uma vez por página (no carregamento), evitando chamadas repetidas ao GPS. Como a aplicação não tem como objetivo apresentar distâncias atualizadas em tempo real, esta abordagem é mais eficiente e suficiente para o caso de uso.
 
 ---
 
