@@ -118,9 +118,9 @@ A arquitetura segue a seguinte divisão em camadas:
 1. Camada de Apresentação (UI)
     Responsável por apresentar dados ao utilizador e reagir às suas interações.
 
-    Implementada com widgets Flutter reativos (FutureBuilder, ListView.builder, etc.), garantindo uma UI fluida e responsiva.
+    - Implementada com widgets Flutter reativos (FutureBuilder, ListView.builder, etc.), garantindo uma UI fluida e responsiva.
 
-    A lógica de interface está desacoplada da lógica de dados, o que permite maior facilidade de manutenção e testes.
+    - A lógica de interface está desacoplada da lógica de dados, o que permite maior facilidade de manutenção e testes.
 
 2. Camada de Lógica de Negócio
     Encapsulada na classe SnsRepository, que atua como intermediário entre a UI e as fontes de dados.
@@ -132,9 +132,9 @@ A arquitetura segue a seguinte divisão em camadas:
 3. Camada de Dados
     Composta por duas implementações da interface SnsDataSource:
 
-    HttpSnsDataSource – Acesso remoto aos dados da API pública do SNS.
+    - HttpSnsDataSource – Acesso remoto aos dados da API pública do SNS.
 
-    SqfliteSnsDataSource – Acesso e persistência de dados localmente, usando SQLite.
+    - SqfliteSnsDataSource – Acesso e persistência de dados localmente, usando SQLite.
 
 
 ### 📍 Gestão de Localização
