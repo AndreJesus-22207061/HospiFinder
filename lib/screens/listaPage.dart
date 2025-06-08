@@ -182,6 +182,7 @@ class _ListaPageState extends State<ListaPage> {
               bottom: 5,
             ),
             child: TextField(
+              key: Key('search-hospital-field'),
               controller: _searchController,
               focusNode: _focusNode,
               style: TextStyle(fontSize: 15, color: Colors.black),
@@ -298,6 +299,7 @@ class _ListaPageState extends State<ListaPage> {
 
   Widget _urgenciaFilterButton() {
     return GestureDetector(
+      key: Key('urgencia-button'),
       onTap: _filtrarUrgencia,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 43, vertical: 3),
