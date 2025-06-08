@@ -61,69 +61,62 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
             return Center(child: Text('Nenhum hospital disponível.'));
           }
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 32.0),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Campos do formulário agrupados aqui
-                            Column(
-                              children: [
-                                SizedBox(height: 10),
-                                _buildHospitalFormField(snapshot.data!),
-                                SizedBox(height: 32),
-                                _buildAvaliacaoFormField(),
-                                SizedBox(height: 32),
-                                _buildDateFormField(),
-                                SizedBox(height: 32),
-                                _buildNotasFormField(),
-                              ],
-                            ),
+          return SingleChildScrollView(
+            child: Padding(
+              padding:
+              const EdgeInsets.only(left: 22.0, right: 24.0, top: 32.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    FutureBuilder<List<Hospital>>(
+                      future: _futureHospitais,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Center(child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return Text(
+                              'Erro ao carregar hospitais: ${snapshot.error}');
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return Text('Nenhum hospital encontrado.');
+                        }
 
-                            // Botão colado ao fundo
-                            Column(
-                              children: [
-                                SizedBox(height: 32),
-                                ElevatedButton(
-                                  key: Key('evaluation-form-submit-button'),
-                                  onPressed: _submit,
-                                  style: ElevatedButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: Colors.blue,
-                                    minimumSize: Size(158, 48),
-                                  ),
-                                  child: Text(
-                                    "Submeter",
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                                if (_submitSucesso)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 12.0),
-                                    child: Text(
-                                      "Submetido com Sucesso",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold, color: Colors.black),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        ),
+                        return _buildHospitalFormField(snapshot.data!);
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    _buildAvaliacaoFormField(),
+                    SizedBox(height: 16),
+                    _buildDateFormField(),
+                    SizedBox(height: 16),
+                    _buildNotasFormField(),
+                    SizedBox(height: 9),
+                    ElevatedButton(
+                      key: Key('evaluation-form-submit-button'),
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blue,
+                        minimumSize:
+                        Size(150, 48), // largura mínima 200, altura 48
+                      ),
+                      child: Text(
+                        "Submeter",
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
+                    if (_submitSucesso)
+                      Text(
+                        "Submetido com Sucesso",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                  ],
                 ),
-              );
-            },
+              ),
+            ),
           );
         },
       ),
@@ -138,7 +131,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
         _selectedHospital = value;
         state.didChange(value);
       },
-      validator: (value) => value == null ? 'Escolha um hospital' : null,
+      validator: (value) => value == null ? 'Escolhe um hospital' : null,
       onSaved: (value) {
         _selectedHospital = value!;
       },
@@ -229,7 +222,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
                 ),
                 errorText: field.errorText,
                 contentPadding:
-                    EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -327,7 +320,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content:
-                          Text("Não é possível selecionar uma data futura."),
+                      Text("Não é possível selecionar uma data futura."),
                     ),
                   );
                   return;
@@ -348,7 +341,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
                 labelStyle: TextStyle(color: Colors.black),
                 hintText: 'dd/MM/yyyy HH:mm',
                 hintStyle:
-                    TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+                TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
                 border: OutlineInputBorder(),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: borderColor),
@@ -358,7 +351,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
                 ),
                 errorText: field.errorText,
                 contentPadding:
-                    EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 suffixIcon: Icon(Icons.calendar_today),
               ),
             ),
@@ -434,3 +427,5 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
     }
   }
 }
+
+
