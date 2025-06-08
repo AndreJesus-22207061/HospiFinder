@@ -112,38 +112,38 @@ Esta estrutura facilita a localização e reutilização de código, bem como a 
 A arquitetura segue a seguinte divisão em camadas:
 
 1. Camada de Apresentação (UI)
-Responsável por apresentar dados ao utilizador e reagir às suas interações.
+    Responsável por apresentar dados ao utilizador e reagir às suas interações.
 
-Implementada com widgets Flutter reativos (FutureBuilder, ListView.builder, etc.), garantindo uma UI fluida e responsiva.
+    Implementada com widgets Flutter reativos (FutureBuilder, ListView.builder, etc.), garantindo uma UI fluida e responsiva.
 
-A lógica de interface está desacoplada da lógica de dados, o que permite maior facilidade de manutenção e testes.
+    A lógica de interface está desacoplada da lógica de dados, o que permite maior facilidade de manutenção e testes.
 
 2. Camada de Lógica de Negócio
-Encapsulada na classe SnsRepository, que atua como intermediário entre a UI e as fontes de dados.
+    Encapsulada na classe SnsRepository, que atua como intermediário entre a UI e as fontes de dados.
 
-Contém lógica como filtragem, ordenação e gestão da lista de últimos hospitais acedidos.
+    Contém lógica como filtragem, ordenação e gestão da lista de últimos hospitais acedidos.
 
-Permite alternar dinamicamente entre fontes de dados locais e remotas, dependendo da conectividade do dispositivo.
+    Permite alternar dinamicamente entre fontes de dados locais e remotas, dependendo da conectividade do dispositivo.
 
 3. Camada de Dados
-Composta por duas implementações da interface SnsDataSource:
+    Composta por duas implementações da interface SnsDataSource:
 
-HttpSnsDataSource – Acesso remoto aos dados da API pública do SNS.
+    HttpSnsDataSource – Acesso remoto aos dados da API pública do SNS.
 
-SqfliteSnsDataSource – Acesso e persistência de dados localmente, usando SQLite.
+    SqfliteSnsDataSource – Acesso e persistência de dados localmente, usando SQLite.
 
-As fontes são intercambiáveis graças ao uso da interface abstrata, promovendo o princípio de programação contra interfaces.
+
 
 ### 🔌 Offline-First
 A aplicação foi concebida com a filosofia offline-first, garantindo que o utilizador tem sempre acesso aos dados dos hospitais, mesmo sem ligação à internet. Para isso:
 
-Na primeira execução com internet, os dados são armazenados localmente usando Sqflite.
+- Na primeira execução com internet, os dados são armazenados localmente usando Sqflite.
 
-Em execuções seguintes, a aplicação verifica automaticamente a conectividade:
+- Em execuções seguintes, a aplicação verifica automaticamente a conectividade:
 
-Se estiver online, sincroniza os dados da API com a base de dados local.
-
-Se estiver offline, utiliza os dados da cache local.
+    - Se estiver online, sincroniza os dados da API com a base de dados local.
+    
+    - Se estiver offline, utiliza os dados da cache local.
 
 Esta abordagem assegura uma experiência de utilização contínua e fiável, mesmo em ambientes com conectividade instável.
 
