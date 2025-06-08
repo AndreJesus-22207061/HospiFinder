@@ -21,4 +21,7 @@ abstract class SnsDataSource {
 
   Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital);
 
+  Future<void> adicionarUltimoAcedido(int hospitalId);
+
+
 }

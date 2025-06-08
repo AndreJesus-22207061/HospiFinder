@@ -141,28 +141,25 @@ class SnsRepository extends SnsDataSource {
     }
   }
 
-
-  void adicionarUltimoAcedido(int hospitalId) {
-    if (!ultimosAcedidosIds.contains(hospitalId)) {
-      if (ultimosAcedidosIds.length == 2) {
-        ultimosAcedidosIds.removeLast(); // Remove o mais antigo
-      }
-      ultimosAcedidosIds.insert(0, hospitalId); // Adiciona no início
-    }
+  @override
+  Future<void> adicionarUltimoAcedido(int hospitalId) async {
+    await local.adicionarUltimoAcedido(hospitalId);
   }
 
-  Future<List<Hospital>> listarUltimosAcedidos() async {
-    List<Hospital> hospitais = [];
 
-    for (var id in ultimosAcedidosIds) {
+
+  Future<List<Hospital>> listarUltimosAcedidos() async {
+    final ids = await local.listarUltimosAcedidosIds();
+
+    List<Hospital> hospitais = [];
+    for (var id in ids) {
       try {
-        Hospital hospital = await getHospitalDetailById(id);
+        final hospital = await getHospitalDetailById(id);
         hospitais.add(hospital);
       } catch (e) {
         print('Erro ao buscar hospital com ID $id: $e');
       }
     }
-
     return hospitais;
   }
 

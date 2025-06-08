@@ -62,6 +62,10 @@ class HttpSnsDataSource extends SnsDataSource {
     throw UnimplementedError();
   }
 
+  @override
+  Future<void> adicionarUltimoAcedido(int hospitalId){
+    throw UnimplementedError();
+  }
 
   @override
   Future<List<Hospital>> getHospitalsByName(String name) async {

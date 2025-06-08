@@ -5,43 +5,38 @@ import 'package:prjectcm/models/hospital.dart';
 import 'package:prjectcm/models/waiting_time.dart';
 import 'package:sqflite/sqflite.dart';
 
-
 class SqfliteSnsDataSource extends SnsDataSource {
-
   Database? database;
 
-  Future<void> init() async{
+  Future<void> init() async {
     database = await openDatabase(
       join(await getDatabasesPath(), 'hospitals.db'),
-      onCreate: (db, version) async{
+      onCreate: (db, version) async {
         await db.execute(
           'CREATE TABLE hospital('
-              'id INTEGER PRIMARY KEY, '
-              'name TEXT NOT NULL, '
-              'latitude REAL NOT NULL, '
-              'longitude REAL NOT NULL, '
-              'address TEXT NOT NULL, '
-              'phoneNumber INTEGER, '
-              'email TEXT, '
-              'district TEXT, '
-              'hasEmergency INTEGER '
-              ')',
+          'id INTEGER PRIMARY KEY, '
+          'name TEXT NOT NULL, '
+          'latitude REAL NOT NULL, '
+          'longitude REAL NOT NULL, '
+          'address TEXT NOT NULL, '
+          'phoneNumber INTEGER, '
+          'email TEXT, '
+          'district TEXT, '
+          'hasEmergency INTEGER '
+          ')',
         );
         print('Tabela hospital criada');
 
-        await db.execute(
-            'CREATE TABLE avaliacao('
-                'id TEXT PRIMARY KEY,'
-                'hospitalId TEXT NOT NULL,'
-                'rating INTEGER NOT NULL,'
-                'date DATETIME NOT NULL,'
-                'notes TEXT,'
-                'FOREIGN KEY (hospitalId) REFERENCES hospital(id)'
-                ')'
-        );
+        await db.execute('CREATE TABLE avaliacao('
+            'id TEXT PRIMARY KEY,'
+            'hospitalId TEXT NOT NULL,'
+            'rating INTEGER NOT NULL,'
+            'date DATETIME NOT NULL,'
+            'notes TEXT,'
+            'FOREIGN KEY (hospitalId) REFERENCES hospital(id)'
+            ')');
         print('Tabela avaliacao criada');
-        await db.execute(
-            '''
+        await db.execute('''
             CREATE TABLE waitingTime (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               hospitalId INTEGER,
@@ -62,16 +57,52 @@ class SqfliteSnsDataSource extends SnsDataSource {
               greyLength INTEGER NOT NULL,
               UNIQUE(hospitalId, emergencyType)
             )
-            '''
-        );
+            ''');
         print('Tabela Tempos de espera criada');
+        await db.execute('''
+              CREATE TABLE ultimos_acedidos (
+              id INTEGER PRIMARY KEY,
+              timestamp INTEGER
+            )
+            ''');
       },
       version: 1,
     );
   }
 
 
+  @override
+  Future<void> adicionarUltimoAcedido(int hospitalId) async {
+    final db = await database;
 
+    if (db == null) {
+
+      return;
+    }
+
+    // Apaga o registo se já existir (para o mover para o topo)
+    await db.delete(
+      'ultimos_acedidos',
+      where: 'id = ?',
+      whereArgs: [hospitalId],
+    );
+
+    // Adiciona novamente com timestamp atual
+    await db.insert(
+      'ultimos_acedidos',
+      {
+        'id': hospitalId,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      },
+    );
+
+    // Garante no máximo 2
+    await db.rawDelete('''
+    DELETE FROM ultimos_acedidos WHERE id NOT IN (
+      SELECT id FROM ultimos_acedidos ORDER BY timestamp DESC LIMIT 2
+    )
+  ''');
+  }
 
 
   @override
@@ -88,21 +119,33 @@ class SqfliteSnsDataSource extends SnsDataSource {
     }
   }
 
+
+  Future<List<int>> listarUltimosAcedidosIds() async {
+    final db = await database!;
+    if (database == null) return [];
+
+    final results = await db.query(
+      'ultimos_acedidos',
+      orderBy: 'timestamp DESC',
+    );
+
+    return results.map((e) => e['id'] as int).toList();
+  }
+
+
   @override
-  Future<List<Hospital>> getAllHospitals() async{
+  Future<List<Hospital>> getAllHospitals() async {
     List result = await database!.rawQuery("SELECT * FROM hospital");
     return result.map((entry) => Hospital.fromDB(entry)).toList();
   }
 
-
-
-
   @override
-  Future<Hospital> getHospitalDetailById(int hospitalId) async{
-    List result = await database!.rawQuery("SELECT * FROM hospital WHERE id = ?", [hospitalId]);
-    if(result.isNotEmpty){
+  Future<Hospital> getHospitalDetailById(int hospitalId) async {
+    List result = await database!
+        .rawQuery("SELECT * FROM hospital WHERE id = ?", [hospitalId]);
+    if (result.isNotEmpty) {
       return Hospital.fromDB(result.first);
-    }else{
+    } else {
       throw Exception('Inexistent hospital $hospitalId');
     }
   }
@@ -128,7 +171,8 @@ class SqfliteSnsDataSource extends SnsDataSource {
         waitingTime.toDB(hospitalId),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      print('Tempo de espera inserido com sucesso para hospital ID: $hospitalId');
+      print(
+          'Tempo de espera inserido com sucesso para hospital ID: $hospitalId');
     } catch (e) {
       print('Erro ao inserir tempo de espera para hospital ID: $hospitalId');
       print('Dados: ${waitingTime.toDB(hospitalId)}');
@@ -138,7 +182,7 @@ class SqfliteSnsDataSource extends SnsDataSource {
   }
 
   @override
-  Future<List<Hospital>> getHospitalsByName(String name) async{
+  Future<List<Hospital>> getHospitalsByName(String name) async {
     final queryLower = name.toLowerCase();
 
     final result = await database!.rawQuery(
@@ -151,9 +195,7 @@ class SqfliteSnsDataSource extends SnsDataSource {
     }
 
     return result.map((map) => Hospital.fromDB(map)).toList();
-
   }
-
 
   @override
   Future<void> insertHospital(Hospital hospital) async {
@@ -161,9 +203,10 @@ class SqfliteSnsDataSource extends SnsDataSource {
       await database!.insert(
         'hospital',
         hospital.toDb(),
-        conflictAlgorithm: ConflictAlgorithm.replace,  // Isto garante o replace
+        conflictAlgorithm: ConflictAlgorithm.replace, // Isto garante o replace
       );
-      print('Hospital inserido com sucesso (ou substituído): ${hospital.name} (ID: ${hospital.id})');
+      print(
+          'Hospital inserido com sucesso (ou substituído): ${hospital.name} (ID: ${hospital.id})');
     } catch (e) {
       print('Erro ao inserir hospital: ${hospital.name} (ID: ${hospital.id})');
       print('Dados: ${hospital.toDb()}');
@@ -173,19 +216,19 @@ class SqfliteSnsDataSource extends SnsDataSource {
   }
 
   @override
-  Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital) async{
-    if(database == null){
+  Future<List<EvaluationReport>> getEvaluationsByHospitalId(
+      Hospital hospital) async {
+    if (database == null) {
       return [];
     }
 
-      final result = await database!.rawQuery(
-        'SELECT * FROM avaliacao WHERE hospitalId = ?',
-        [hospital.id.toString()],
-      );
+    final result = await database!.rawQuery(
+      'SELECT * FROM avaliacao WHERE hospitalId = ?',
+      [hospital.id.toString()],
+    );
 
-      return result.map((map) => EvaluationReport.fromDb(map)).toList();
+    return result.map((map) => EvaluationReport.fromDb(map)).toList();
   }
-
 
 //devem apenas implementar aqui só e apenas os métodos da classe abstrata
   Future<void> apagarBaseDeDados() async {
@@ -193,10 +236,4 @@ class SqfliteSnsDataSource extends SnsDataSource {
     await deleteDatabase(caminho);
     print('Base de dados apagada com sucesso.');
   }
-
-
-
-
-
-
 }

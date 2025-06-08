@@ -21,7 +21,7 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 ### 📊 Dashboard
 
-![Dashboard](assets/screens/dashboard.png)
+![Dashboard](assets/screens/dashboardNew.png)
 
 ### 📋 Lista de Hospitais
 
@@ -193,6 +193,9 @@ Define a interface base para acesso aos dados relacionados com hospitais, avalia
 - `Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital)`  
   Obtém as avaliações associadas a um hospital.
 
+-`Future<void> adicionarUltimoAcedido(int hospitalId)`
+  Adiciona o hospital ultimo acedido.
+
 ---
 
 ### ⚙️ `HttpSnsDataSource`
@@ -206,7 +209,7 @@ Implementa a interface `SnsDataSource` com acesso a dados remotos via API HTTP.
   - `getHospitalDetailById(int hospitalId)`
   - `getHospitalsByName(String name)`
 
-Métodos relacionados com avaliação e tempos de espera ainda não implementados (`UnimplementedError`).
+Métodos relacionados com avaliação, tempos de espera e ultimos acedidos ainda não implementados (`UnimplementedError`).
 
 ---
 
@@ -224,6 +227,7 @@ Implementa a interface `SnsDataSource` usando uma base de dados local SQLite.
   - `getHospitalsByName(String name)`
   - `attachEvaluation(int hospitalId, EvaluationReport report)`
   - `getEvaluationsByHospitalId(Hospital hospital)`
+  - `adicionarUltimoAcedido(int hospitalId)`
 - Métodos para tempos de espera ainda não implementados.
 
 ---
