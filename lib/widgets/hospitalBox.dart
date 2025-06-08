@@ -6,7 +6,6 @@ import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/hospital.dart';
 import 'package:prjectcm/screens/hospital_detail_page.dart';
 import 'package:provider/provider.dart';
-
 import '../data/sns_repository.dart';
 
 

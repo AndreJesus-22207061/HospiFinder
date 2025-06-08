@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:prjectcm/connectivity_module.dart';
 import 'package:prjectcm/data/http_sns_datasource.dart';
-import 'package:prjectcm/data/sns_repository.dart';
 import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/main.dart';
 import 'package:prjectcm/models/hospital.dart';
-import 'package:prjectcm/widgets/hospitalBox.dart';
 import 'package:provider/provider.dart';
 import 'package:testable_form_field/testable_form_field.dart';
-
 import 'fake_connectivity_module.dart';
 import 'fake_http_sns_datasource.dart';
 import 'fake_location_module.dart';
@@ -50,7 +47,6 @@ void runWidgetTests() {
         reason: "No ecrã do formulário, deveria existir um Widget com a key 'evaluation-hospital-selection-field'");
     expect(tester.widget(hospitalSelectionViewFinder), isA<TestableFormField<Hospital>>(),
         reason: "O widget com a key 'evaluation-hospital-selection-field' deveria ser um TestableFormField<Hospital>");
-    TestableFormField<Hospital> hospitalSelectionFormField = tester.widget(hospitalSelectionViewFinder);
 
 
     final Finder ratingViewFinder = find.byKey(Key('evaluation-rating-field'));
@@ -203,7 +199,6 @@ void runWidgetTests() {
         reason: "No ecrã do formulário, deveria existir um Widget com a key 'evaluation-rating-field'");
     expect(tester.widget(ratingViewFinder), isA<TestableFormField<int>>(),
         reason: "O widget com a key 'evaluation-rating-field' deveria ser um TestableFormField<int>");
-    TestableFormField<int> ratingFormField = tester.widget(ratingViewFinder);
 
     final Finder dateTimeViewFinder = find.byKey(Key('evaluation-datetime-field'));
     expect(dateTimeViewFinder, findsOneWidget,
