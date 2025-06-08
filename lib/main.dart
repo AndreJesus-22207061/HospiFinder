@@ -55,14 +55,14 @@ class _MyAppState extends State<MyApp> {
   //late Future<void> _initialization;
 
 
-  /*
+/*
   @override
   void initState() {
     super.initState();
     final db = context.read<SqfliteSnsDataSource>();
     _initialization = db.apagarBaseDeDados().then((_) => db.init());
   }
-   */
+*/
 
   @override
   Widget build(BuildContext context) {

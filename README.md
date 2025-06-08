@@ -29,8 +29,7 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 ### 🏥 Detalhes do Hospital
 
-![Detalhes](assets/screens/detalhes_hospital_page.png)
-
+![Detalhes](assets/screens/detalhes1.png) ![Detalhes](assets/screens/detalhes2.png)
 ### 🌟 Avaliação
 
 ![Avaliação](assets/screens/avaliacao.png)
@@ -146,20 +145,21 @@ Classe que representa um hospital e inclui os dados básicos, bem como uma lista
 
 ### ⏱️ `WaitingTime`
 
-Mini descrição bla bla bla bla bla
+
+Classe responsável por representar e gerir os tempos de espera e o número de pacientes em fila de espera nas urgências hospitalares, agrupados por categorias de triagem (cor).
 
 - **Atributos:**
-  - `sasasa`
-  - `sasasa`
-  - `sasasa`
-  - `sasasa`
-  - `sasasa`
+  - `emergency` (`String`) - Descrição do tipo de urgência (ex: “Emergência Geral”).
+  - `waitTimes` (`Map<String, int>`) -  Mapa com os tempos de espera (em segundos) para cada cor de triagem.
+  - `queueLengths` (`Map<String, int>`) -  Mapa com o número de pessoas em fila para cada cor de triagem.
+  - `lastUpdate` (`DateTime`) - Data e hora da última atualização dos dados.
 
 - **Métodos:**
-  - `sasasa`
-  - `sasasa`
-  - `sasasa`
-  - `sasasa`
+  - `fromJSON(Map<String, dynamic> json)` - Cria uma instância a partir de dados recebidos por JSON (ex: de uma API).
+  - `fromDB(Map<String, dynamic> map)`: Cria uma instância a partir de dados lidos da base de dados local.
+  - `toDB(int hospitalId)`: Converte a instância num mapa apropriado para inserção na base de dados.
+  - `formatarTempo(int segundos)`: Converte um tempo em segundos para um formato legível, como `"2h15min"` ou `"3d"`.
+  - `getlastUpdatedFormatado()`: Devolve a data e hora da última atualização no formato `"dd/mm/yyyy hh:mm"`.
 
 ---
 
