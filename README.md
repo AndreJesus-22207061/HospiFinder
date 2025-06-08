@@ -138,7 +138,7 @@ A arquitetura segue a seguinte divisão em camadas:
 
 
 ### 📍 Gestão de Localização
-A lógica de localização é gerida através do ficheiro location_service.dart, localizado na pasta service/.
+A lógica de localização é gerida através do ficheiro `location_service.dart`, localizado na pasta `service/`.
 
 - A localização é obtida no início de cada página, no momento do carregamento (load), utilizando FutureBuilder.
 
