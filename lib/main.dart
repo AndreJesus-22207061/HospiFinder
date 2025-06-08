@@ -52,7 +52,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // This widget is the root of your application.
   //late Future<void> _initialization;
 
 
@@ -62,7 +61,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     final db = context.read<SqfliteSnsDataSource>();
     _initialization = db.apagarBaseDeDados().then((_) => db.init());
-  }*/
+  }
+   */
+
   @override
   Widget build(BuildContext context) {
     final hospitalDatabase = context.read<SqfliteSnsDataSource>();

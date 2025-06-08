@@ -57,6 +57,14 @@ class SnsRepository extends SnsDataSource {
 
     if (await connectivityModule.checkConnectivity()) {
       hospital = await remote.getHospitalDetailById(hospitalId);
+
+
+      if (hospital.hasEmergency == true) {
+        final waitingTimes = await remote.getHospitalWaitingTimes(hospitalId);
+        for (var wt in waitingTimes) {
+          await local.insertWaitingTime(hospitalId, wt);
+        }
+      }
     } else {
       hospital = await local.getHospitalDetailById(hospitalId);
     }
@@ -64,13 +72,18 @@ class SnsRepository extends SnsDataSource {
     final avaliacoes = await getEvaluationsByHospitalId(hospital);
     hospital.reports = avaliacoes;
 
+
+
     return hospital;
   }
 
   @override
-  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) {
-    // TODO: implement getHospitalWaitingTimes
-    throw UnimplementedError();
+  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) async {
+    if(await connectivityModule.checkConnectivity()){
+      return await remote.getHospitalWaitingTimes(hospitalId);
+    }else{
+      return await local.getHospitalWaitingTimes(hospitalId);
+    }
   }
 
   @override

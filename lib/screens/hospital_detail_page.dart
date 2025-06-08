@@ -9,7 +9,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../data/sns_repository.dart';
-import '../models/evaluation_report.dart'; // para formatar data
+import '../models/evaluation_report.dart';
+import '../models/waiting_time.dart'; // para formatar data
 //import 'package:prjectcm/theme.dart';
 
 class HospitalDetailPage extends StatefulWidget {
@@ -26,11 +27,14 @@ class _HospitalDetailPageState extends State<HospitalDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    int currentUrgencyIndex = 0;
+    PageController pageController = PageController();
     final httpSnsDataSource = context.read<HttpSnsDataSource>();
     final connectivityModule = context.read<ConnectivityModule>();
     final sqfliteSnsDataSource = context.read<SqfliteSnsDataSource>();
     final locationModule = context.read<LocationModule>();
-    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource, connectivityModule,locationModule);
+    snsRepository = SnsRepository(sqfliteSnsDataSource, httpSnsDataSource,
+        connectivityModule, locationModule);
     return FutureBuilder<LocationData?>(
         future: snsRepository.obterLocation(),
         builder: (context, snapshot) {
@@ -79,409 +83,777 @@ class _HospitalDetailPageState extends State<HospitalDetailPage> {
                       '[DEBUG] Avaliação #$i: rating=${hospital.reports[i].rating}, data=${hospital.reports[i].dataHora}, notas=${hospital.reports[i].notas}');
                 }
 
-                final estrelas = snsRepository.gerarEstrelasParaHospital(hospital);
-                final media = snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
-                return Scaffold(
-                  appBar: AppBar(title: Text(hospital.name)),
-                  body: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Caixa de detalhes do hospital
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 4,
-                                offset: Offset(2, 2),
-                              ),
-                            ],
-                            border: Border.all(
-                              color: Colors.black.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Nome
-                                Text(
-                                  hospital.name,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                ),
-                                SizedBox(height: 16),
+                final estrelas =
+                    snsRepository.gerarEstrelasParaHospital(hospital);
+                final media =
+                    snsRepository.mediaAvaliacoes(hospital).toStringAsFixed(1);
 
-                                // Morada | Distância
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Morada",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            hospital.address,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 13,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "Distância",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          _hospitalKmText(context, hospital,
-                                              userLat, userLon),
-                                        ],
-                                      ),
+                return FutureBuilder<List<WaitingTime>>(
+                    future: snsRepository
+                        .getHospitalWaitingTimes(widget.hospitalId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      final hasError = snapshot.hasError ||
+                          !snapshot.hasData ||
+                          snapshot.data!.isEmpty;
+                      final waitingTimes = snapshot.data ?? [];
+
+                      return Scaffold(
+                        appBar: AppBar(title: Text(hospital.name)),
+                        body: SingleChildScrollView(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Caixa de detalhes do hospital
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer,
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(2, 2),
                                     ),
                                   ],
+                                  border: Border.all(
+                                    color: Colors.black.withOpacity(0.3),
+                                    width: 1,
+                                  ),
                                 ),
-                                SizedBox(height: 12),
-
-                                // Email | Telefone
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Email",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            hospital.email,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 15,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            "Telefone",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            hospital.phoneNumber.toString(),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 15,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 12),
-
-                                // Urgência | Média avaliações
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Média de Avaliações",
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            // o Row fica só do tamanho do conteúdo
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Text(
-                                                media,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      color: Colors.white,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                              ),
-                                              SizedBox(width: 6),
-                                              ...estrelas,
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: hospital.hasEmergency
-                                                  ? Colors.green.shade100
-                                                  : Colors.red.shade100,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Nome
+                                      Text(
+                                        hospital.name,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleMedium
+                                            ?.copyWith(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
                                             ),
-                                            child: Text(
-                                              hospital.hasEmergency
-                                                  ? 'Com Urgência'
-                                                  : 'Sem Urgência',
-                                              style: TextStyle(
-                                                color: hospital.hasEmergency
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                      ),
+                                      SizedBox(height: 16),
+
+                                      // Morada | Distância
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "Morada",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Text(
+                                                  hospital.address,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 13,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  "Distância",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                _hospitalKmText(context,
+                                                    hospital, userLat, userLon),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                                      SizedBox(height: 12),
 
-                        SizedBox(height: 16),
-
-                        // Caixa branca para avaliações
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Center(
-                                    child: Text("Avaliações",
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black))),
-                                SizedBox(height: 10),
-                                ...hospital.reports.isNotEmpty
-                                    ? hospital.reports
-                                        .asMap()
-                                        .entries
-                                        .map((entry) {
-                                        final index = entry.key;
-                                        final avaliacao = entry.value;
-                                        print(
-                                            'Número de avaliações: ${hospital.reports.length}');
-                                        print(
-                                            'Avaliacao #$index: rating=${avaliacao.rating}, date=${avaliacao.dataHora}, notas=${avaliacao.notas}');
-                                        final corDeFundo = index.isEven
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primaryContainer
-                                            : Theme.of(context)
-                                                .colorScheme
-                                                .secondaryContainer;
-
-                                        final estrelas = snsRepository
-                                            .gerarEstrelasParaAvaliacao(
-                                                avaliacao);
-
-                                        return Container(
-                                          width: double.infinity,
-                                          margin: const EdgeInsets.symmetric(
-                                              vertical: 8),
-                                          padding: const EdgeInsets.all(16.0),
-                                          decoration: BoxDecoration(
-                                            color: corDeFundo,
-                                            // ou outra cor personalizada
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black12,
-                                                blurRadius: 6,
-                                                offset: Offset(2, 2),
-                                              ),
-                                            ],
-                                            border: Border.all(
-                                              color:
-                                                  Colors.black.withOpacity(0.1),
-                                              width: 1,
+                                      // Email | Telefone
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "Email",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Text(
+                                                  hospital.email,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 15,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    avaliacao.rating
-                                                        .toStringAsFixed(1),
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyLarge
-                                                        ?.copyWith(
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  "Telefone",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Text(
+                                                  hospital.phoneNumber
+                                                      .toString(),
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 15,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 12),
+
+                                      // Urgência | Média avaliações
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  "Média de Avaliações",
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.copyWith(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                ),
+                                                SizedBox(height: 4),
+                                                Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  // o Row fica só do tamanho do conteúdo
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      media,
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color: Colors.white,
                                                             fontWeight:
                                                                 FontWeight.bold,
-                                                            color:
-                                                                Colors.black),
+                                                          ),
+                                                    ),
+                                                    SizedBox(width: 6),
+                                                    ...estrelas,
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: hospital.hasEmergency
+                                                        ? Colors.green.shade100
+                                                        : Colors.red.shade100,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
                                                   ),
-                                                  SizedBox(width: 6),
-                                                  ...estrelas,
-                                                ],
-                                              ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                DateFormat('dd/MM/yyyy HH:mm')
-                                                    .format(avaliacao.dataHora),
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      color: Colors.white,
+                                                  child: Text(
+                                                    hospital.hasEmergency
+                                                        ? 'Com Urgência'
+                                                        : 'Sem Urgência',
+                                                    style: TextStyle(
+                                                      color:
+                                                          hospital.hasEmergency
+                                                              ? Colors.green
+                                                              : Colors.red,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              SizedBox(height: 16),
+
+                              if (hospital.hasEmergency == true) ...[
+                                Container(
+                                  width: double.infinity,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: waitingTimes.isEmpty || hasError
+                                        ? Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: const [
+                                              SizedBox(height: 8),
+                                              Center(
+                                                child: Text(
+                                                  'Tempos de Espera',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
                                               ),
-                                              const SizedBox(height: 6),
+                                              SizedBox(height: 10),
                                               Text(
-                                                "${avaliacao.notas}",
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      color: Colors.black,
-                                                    ),
+                                                'Não foi possível obter os tempos de espera.',
+                                                style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.black),
+                                                textAlign: TextAlign.center,
                                               ),
                                             ],
+                                          )
+                                        : StatefulBuilder(
+                                            builder: (context, setState) {
+                                              return Column(
+                                                children: [
+                                                  const SizedBox(height: 8),
+                                                  Center(
+                                                    child: Text(
+                                                      'Tempos de Espera',
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.black,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 12),
+
+                                                  // Urgência com setas
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      IconButton(
+                                                        icon: Icon(Icons
+                                                            .arrow_back_ios),
+                                                        onPressed:
+                                                            currentUrgencyIndex >
+                                                                    0
+                                                                ? () {
+                                                                    setState(
+                                                                        () {
+                                                                      currentUrgencyIndex--;
+                                                                      pageController
+                                                                          .animateToPage(
+                                                                        currentUrgencyIndex,
+                                                                        duration:
+                                                                            Duration(milliseconds: 300),
+                                                                        curve: Curves
+                                                                            .ease,
+                                                                      );
+                                                                    });
+                                                                  }
+                                                                : null,
+                                                      ),
+                                                      Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 16,
+                                                                vertical: 8),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .colorScheme
+                                                                  .primary,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(30),
+                                                        ),
+                                                        child: Text(
+                                                          waitingTimes[
+                                                                  currentUrgencyIndex]
+                                                              .emergency,
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        ),
+                                                      ),
+                                                      IconButton(
+                                                        icon: Icon(Icons
+                                                            .arrow_forward_ios),
+                                                        onPressed:
+                                                            currentUrgencyIndex <
+                                                                    waitingTimes
+                                                                            .length -
+                                                                        1
+                                                                ? () {
+                                                                    setState(
+                                                                        () {
+                                                                      currentUrgencyIndex++;
+                                                                      pageController
+                                                                          .animateToPage(
+                                                                        currentUrgencyIndex,
+                                                                        duration:
+                                                                            Duration(milliseconds: 300),
+                                                                        curve: Curves
+                                                                            .ease,
+                                                                      );
+                                                                    });
+                                                                  }
+                                                                : null,
+                                                      ),
+                                                    ],
+                                                  ),
+
+                                                  const SizedBox(height: 12),
+
+                                                  // Conteúdo da urgência atual
+                                                  SizedBox(
+                                                    height: 380,
+                                                    child: PageView.builder(
+                                                      controller:
+                                                          pageController,
+                                                      onPageChanged: (index) {
+                                                        setState(() {
+                                                          currentUrgencyIndex =
+                                                              index;
+                                                        });
+                                                      },
+                                                      itemCount:
+                                                          waitingTimes.length,
+                                                      itemBuilder:
+                                                          (context, pageIndex) {
+                                                        final wt = waitingTimes[
+                                                            pageIndex];
+                                                        final colors = [
+                                                          'Red',
+                                                          'Orange',
+                                                          'Yellow',
+                                                          'Green',
+                                                          'Blue',
+                                                          'Grey'
+                                                        ];
+                                                        return Column(
+                                                          children: [
+                                                            Expanded(
+                                                              child: ListView
+                                                                  .builder(
+                                                                itemCount:
+                                                                    colors
+                                                                        .length,
+                                                                itemBuilder:
+                                                                    (context,
+                                                                        index) {
+                                                                  final color =
+                                                                      colors[
+                                                                          index];
+                                                                  final tempo =
+                                                                      wt.waitTimes[
+                                                                              color] ??
+                                                                          0;
+                                                                  final fila =
+                                                                      wt.queueLengths[
+                                                                              color] ??
+                                                                          0;
+
+                                                                  final Map<
+                                                                          String,
+                                                                          String>
+                                                                      prioridadesNome =
+                                                                      {
+                                                                    'Red':
+                                                                        'Emergente',
+                                                                    'Orange':
+                                                                        'Muito Urgente',
+                                                                    'Yellow':
+                                                                        'Urgente',
+                                                                    'Green':
+                                                                        'Pouco Urgente',
+                                                                    'Blue':
+                                                                        'Não Urgente',
+                                                                    'Grey':
+                                                                        'Não Atribuído',
+                                                                  };
+
+                                                                  final Map<
+                                                                          String,
+                                                                          Color>
+                                                                      prioridadesCores =
+                                                                      {
+                                                                    'Red': Colors
+                                                                        .red,
+                                                                    'Orange': Colors
+                                                                        .orange,
+                                                                    'Yellow':
+                                                                        Colors.yellow[
+                                                                            700]!,
+                                                                    'Green': Colors
+                                                                        .green,
+                                                                    'Blue': Colors
+                                                                        .blue,
+                                                                    'Grey': Colors
+                                                                        .grey,
+                                                                  };
+
+                                                                  final prioridadeTexto =
+                                                                      prioridadesNome[
+                                                                              color] ??
+                                                                          'Desconhecida';
+                                                                  final prioridadeCor =
+                                                                      prioridadesCores[
+                                                                              color] ??
+                                                                          Colors
+                                                                              .black;
+
+                                                                  return Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            4,
+                                                                        vertical:
+                                                                            4),
+                                                                    child: Card(
+                                                                      color: Colors
+                                                                              .grey[
+                                                                          100],
+                                                                      shape:
+                                                                          RoundedRectangleBorder(
+                                                                        borderRadius:
+                                                                            BorderRadius.circular(12),
+                                                                      ),
+                                                                      child:
+                                                                          Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .symmetric(
+                                                                            horizontal:
+                                                                                12,
+                                                                            vertical:
+                                                                                10),
+                                                                        child:
+                                                                            Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.spaceBetween,
+                                                                          children: [
+                                                                            Text(
+                                                                              prioridadeTexto,
+                                                                              style: TextStyle(
+                                                                                fontWeight: FontWeight.bold,
+                                                                                fontSize: 16,
+                                                                                color: prioridadeCor,
+                                                                              ),
+                                                                            ),
+                                                                            Row(
+                                                                              children: [
+                                                                                Text(
+                                                                                  '⏱ ${wt.formatarTempo(tempo)}',
+                                                                                  style: TextStyle(color: Colors.black),
+                                                                                ),
+                                                                                const SizedBox(width: 12),
+                                                                                Text(
+                                                                                  '👥 $fila pessoas',
+                                                                                  style: TextStyle(color: Colors.black),
+                                                                                ),
+                                                                              ],
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 14),
+                                                            Center(
+                                                              child: Text(
+                                                                'Última atualização: ${wt.getlastUpdatedFormatado()}',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        13,
+                                                                    color: Colors
+                                                                        .black),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
                                           ),
-                                        );
-                                      }).toList()
-                                    : [
-                                        Center(
-                                            child: Text(
-                                                "Ainda não existem avaliações para este hospital.",
-                                                style: TextStyle(
-                                                    fontSize: 15,
-                                                    color: Colors.black)))
-                                      ],
+                                  ),
+                                ),
                               ],
-                            ),
+
+                              SizedBox(height: 16),
+
+                              // Caixa branca para avaliações
+                              Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Center(
+                                          child: Text("Avaliações",
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black))),
+                                      SizedBox(height: 10),
+                                      ...hospital.reports.isNotEmpty
+                                          ? hospital.reports
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                              final index = entry.key;
+                                              final avaliacao = entry.value;
+                                              print(
+                                                  'Número de avaliações: ${hospital.reports.length}');
+                                              print(
+                                                  'Avaliacao #$index: rating=${avaliacao.rating}, date=${avaliacao.dataHora}, notas=${avaliacao.notas}');
+                                              final corDeFundo = index.isEven
+                                                  ? Theme.of(context)
+                                                      .colorScheme
+                                                      .primaryContainer
+                                                  : Theme.of(context)
+                                                      .colorScheme
+                                                      .secondaryContainer;
+
+                                              final estrelas = snsRepository
+                                                  .gerarEstrelasParaAvaliacao(
+                                                      avaliacao);
+
+                                              return Container(
+                                                width: double.infinity,
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8),
+                                                padding:
+                                                    const EdgeInsets.all(16.0),
+                                                decoration: BoxDecoration(
+                                                  color: corDeFundo,
+                                                  // ou outra cor personalizada
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black12,
+                                                      blurRadius: 6,
+                                                      offset: Offset(2, 2),
+                                                    ),
+                                                  ],
+                                                  border: Border.all(
+                                                    color: Colors.black
+                                                        .withOpacity(0.1),
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          avaliacao.rating
+                                                              .toStringAsFixed(
+                                                                  1),
+                                                          style: Theme.of(
+                                                                  context)
+                                                              .textTheme
+                                                              .bodyLarge
+                                                              ?.copyWith(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Colors
+                                                                      .black),
+                                                        ),
+                                                        SizedBox(width: 6),
+                                                        ...estrelas,
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Text(
+                                                      DateFormat(
+                                                              'dd/MM/yyyy HH:mm')
+                                                          .format(avaliacao
+                                                              .dataHora),
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color: Colors.white,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Text(
+                                                      "${avaliacao.notas}",
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.copyWith(
+                                                            color: Colors.black,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            }).toList()
+                                          : [
+                                              Center(
+                                                  child: Text(
+                                                      "Ainda não existem avaliações para este hospital.",
+                                                      style: TextStyle(
+                                                          fontSize: 15,
+                                                          color: Colors.black)))
+                                            ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
+                      );
+                    });
               },
             );
           }
-          ;
         });
   }
 }
@@ -505,4 +877,23 @@ Widget _hospitalKmText(
           color: Colors.white,
         ),
   );
+}
+
+Color _getColorFromPriority(String color) {
+  switch (color) {
+    case 'Red':
+      return Colors.red;
+    case 'Orange':
+      return Colors.deepOrange;
+    case 'Yellow':
+      return Colors.amber;
+    case 'Green':
+      return Colors.green;
+    case 'Blue':
+      return Colors.blue;
+    case 'Grey':
+      return Colors.grey;
+    default:
+      return Colors.black;
+  }
 }

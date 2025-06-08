@@ -42,9 +42,18 @@ class HttpSnsDataSource extends SnsDataSource {
   }
 
   @override
-  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) {
-    // TODO: implement getHospitalWaitingTimes
-    throw UnimplementedError();
+  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) async{
+    final response = await _client.get(
+      url: 'https://servicos.min-saude.pt/pds/api/tems/standbyTime/$hospitalId',
+    );
+
+    if (response.statusCode == 200) {
+      final responseJson = jsonDecode(response.body);
+      List temposJSON = responseJson['Result'];
+      return temposJSON.map((json) => WaitingTime.fromJSON(json)).toList();
+    } else {
+      throw Exception('Erro ao obter tempos de espera: ${response.statusCode}');
+    }
   }
 
   @override

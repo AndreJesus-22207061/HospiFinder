@@ -40,6 +40,31 @@ class SqfliteSnsDataSource extends SnsDataSource {
                 ')'
         );
         print('Tabela avaliacao criada');
+        await db.execute(
+            '''
+            CREATE TABLE waitingTime (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              hospitalId INTEGER,
+              lastUpdate TEXT NOT NULL,
+              emergencyType TEXT NOT NULL,
+              emergencyDescription TEXT NOT NULL,
+              redTime INTEGER NOT NULL,
+              redLength INTEGER NOT NULL,
+              orangeTime INTEGER NOT NULL,
+              orangeLength INTEGER NOT NULL,
+              yellowTime INTEGER NOT NULL,
+              yellowLength INTEGER NOT NULL,
+              greenTime INTEGER NOT NULL,
+              greenLength INTEGER NOT NULL,
+              blueTime INTEGER NOT NULL,
+              blueLength INTEGER NOT NULL,
+              greyTime INTEGER NOT NULL,
+              greyLength INTEGER NOT NULL,
+              UNIQUE(hospitalId, emergencyType)
+            )
+            '''
+        );
+        print('Tabela Tempos de espera criada');
       },
       version: 1,
     );
@@ -83,15 +108,33 @@ class SqfliteSnsDataSource extends SnsDataSource {
   }
 
   @override
-  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) {
-    // TODO: implement getHospitalWaitingTimes
-    throw UnimplementedError();
+  Future<List<WaitingTime>> getHospitalWaitingTimes(int hospitalId) async {
+    if (database == null) return [];
+
+    final maps = await database!.query(
+      'waitingTime',
+      where: 'hospitalId = ?',
+      whereArgs: [hospitalId],
+    );
+
+    return maps.map((map) => WaitingTime.fromDB(map)).toList();
   }
 
   @override
-  Future<void> insertWaitingTime(int hospitalId, waitingTime) {
-    // TODO: implement insertWaitingTime
-    throw UnimplementedError();
+  Future<void> insertWaitingTime(int hospitalId, waitingTime) async {
+    try {
+      await database!.insert(
+        'waitingTime',
+        waitingTime.toDB(hospitalId),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      print('Tempo de espera inserido com sucesso para hospital ID: $hospitalId');
+    } catch (e) {
+      print('Erro ao inserir tempo de espera para hospital ID: $hospitalId');
+      print('Dados: ${waitingTime.toDB(hospitalId)}');
+      print('Erro: $e');
+      rethrow;
+    }
   }
 
   @override
