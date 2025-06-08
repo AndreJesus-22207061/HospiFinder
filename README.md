@@ -91,22 +91,24 @@ A apresentação da aplicação, demonstrando as principais funcionalidades, pod
 
 ## 🏗️ Arquitetura da Aplicação
 
-A arquitetura da aplicação foi desenhada com o objetivo de garantir manutenibilidade, escalabilidade e uma separação clara de responsabilidades. Para isso, optámos por utilizar repositórios, fontes de dados desacopladas e gestão de estado leve através de widgets reativos como FutureBuilder e StreamBuilder.
+A arquitetura da nossa aplicação foi pensada e desenvolvida com base nas boas práticas apresentadas nas aulas e nos vídeos recomendados pelo professor. O objetivo foi garantir manutenibilidade, escalabilidade e uma separação clara de responsabilidades, utilizando o padrão Repository para a gestão da camada de dados, injeção de dependências com Provider, e gestão de estado leve com widgets reativos como FutureBuilder e StreamBuilder.
 
 ### 📁 Estrutura Modular
 A aplicação foi organizada em pastas temáticas, com separação clara entre:
 
-models/ – Definição das classes de domínio, como Hospital, EvaluationReport e WaitingTime.
+`models/` – Definição das classes de domínio, como Hospital, EvaluationReport e WaitingTime.
 
-http/ - 
+`http/` – Contém a classe HttpClient, que centraliza todas as chamadas HTTP e aplica middleware para logging das requisições com pretty_http_logger.
 
-data/ – Contém os ficheiros relacionados com acesso a dados, como HttpSnsDataSource, SqfliteSnsDataSource e SnsRepository.
+`data/` – Contém os ficheiros relacionados com acesso a dados, como HttpSnsDataSource, SqfliteSnsDataSource e SnsRepository.
 
-screens/ – Implementação das várias interfaces (UI) da aplicação, organizadas por ecrã (Dashboard, Lista, Avaliação, etc.).
+`screens/` –  Implementação das várias interfaces (UI) da aplicação, organizadas por ecrã (ex: Dashboard, Lista, Avaliação).
 
-service/ - 
+`service/` – Inclui serviços auxiliares como:
+    - `location_service.dart`: responsável por obter a localização do utilizador;
+    - `connectivity_service.dart`: responsável por verificar o estado da ligação à internet.
 
-widgets/ – Componentes reutilizáveis da interface, como caixa de hospital.
+`widgets/` – Componentes reutilizáveis da interface, como caixa de hospital.
 
 Esta estrutura facilita a localização e reutilização de código, bem como a integração futura de novas funcionalidades.
 
@@ -123,9 +125,9 @@ A arquitetura segue a seguinte divisão em camadas:
 2. Camada de Lógica de Negócio
     Encapsulada na classe SnsRepository, que atua como intermediário entre a UI e as fontes de dados.
 
-    Contém lógica como filtragem, ordenação e gestão da lista de últimos hospitais acedidos.
+    - Decide dinamicamente, com base na conectividade (connectivity_service), se deve usar a API remota ou a base de dados local.
 
-    Permite alternar dinamicamente entre fontes de dados locais e remotas, dependendo da conectividade do dispositivo.
+    - Contém a lógica de filtragem, ordenação e gestão dos últimos hospitais acedidos
 
 3. Camada de Dados
     Composta por duas implementações da interface SnsDataSource:
@@ -135,6 +137,14 @@ A arquitetura segue a seguinte divisão em camadas:
     SqfliteSnsDataSource – Acesso e persistência de dados localmente, usando SQLite.
 
 
+### 📍 Gestão de Localização
+A lógica de localização é gerida através do ficheiro location_service.dart, localizado na pasta service/.
+
+- A localização é obtida no início de cada página, no momento do carregamento (load), utilizando FutureBuilder.
+
+- Esta abordagem evita chamadas desnecessárias ao GPS, preservando a performance da aplicação.
+
+- Como a app não exige atualização contínua da distância em tempo real, a localização é capturada uma única vez por página e reutilizada durante o seu ciclo de vida.
 
 ### 🔌 Offline-First
 A aplicação foi concebida com a filosofia offline-first, garantindo que o utilizador tem sempre acesso aos dados dos hospitais, mesmo sem ligação à internet. Para isso:
