@@ -251,6 +251,7 @@ Durante o desenvolvimento da aplicação, foram consultadas diversas fontes exte
 
 - [YouTube – Flutter Google Maps Tutorial](https://youtu.be/M7cOmiSly3Q?si=50yc7vlakMaxRz3Z) – Tutorial utilizado para a **implementação do mapa com marcadores** usando o `google_maps_flutter`;
 - [Introdução ao Dart e ao Flutter](https://www.youtube.com/watch?v=b4ZxFLW7neQ&list=PL_wKlpKIC9vWubXsj3IRPZ2Rk6QMfsPPg)  - Tutorial para ajuda no desenvolvimento de algumas funcionalidades do projeto.
+- [TAB BAR • Flutter Widget of the Day #13](https://www.youtube.com/watch?v=XSheN4Lkhpc)  - Tutorial para ajuda na implementação de uma Tab Bar para os WaitingTimes 
 
 ---
 
