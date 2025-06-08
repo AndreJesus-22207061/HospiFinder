@@ -131,7 +131,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
         _selectedHospital = value;
         state.didChange(value);
       },
-      validator: (value) => value == null ? 'Escolhe um hospital' : null,
+      validator: (value) => value == null ? 'Escolha um hospital' : null,
       onSaved: (value) {
         _selectedHospital = value!;
       },
