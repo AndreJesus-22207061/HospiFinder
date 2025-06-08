@@ -9,7 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../data/sns_repository.dart';
-import '../models/evaluation_report.dart';
 import '../models/waiting_time.dart'; // para formatar data
 //import 'package:prjectcm/theme.dart';
 
@@ -879,21 +878,3 @@ Widget _hospitalKmText(
   );
 }
 
-Color _getColorFromPriority(String color) {
-  switch (color) {
-    case 'Red':
-      return Colors.red;
-    case 'Orange':
-      return Colors.deepOrange;
-    case 'Yellow':
-      return Colors.amber;
-    case 'Green':
-      return Colors.green;
-    case 'Blue':
-      return Colors.blue;
-    case 'Grey':
-      return Colors.grey;
-    default:
-      return Colors.black;
-  }
-}

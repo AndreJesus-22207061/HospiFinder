@@ -1,5 +1,4 @@
 import 'package:prjectcm/models/evaluation_report.dart';
-import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 
 class Hospital {

@@ -160,12 +160,12 @@ Widget _hospitalListTile(
   );
 }
 
-Widget _hospitalAddressText(BuildContext context, String district, String address) {
+/*Widget _hospitalAddressText(BuildContext context, String district, String address) {
   return Text(
     "$district - $address",
     style: Theme.of(context).textTheme.bodyMedium,
   );
-}
+}*/
 
 Widget _hospitalKmText(BuildContext context, Hospital hospital, double? userLat, double? userLon) {
   if (userLat == null || userLon == null) {
@@ -182,9 +182,9 @@ Widget _hospitalKmText(BuildContext context, Hospital hospital, double? userLat,
 }
 
 
-Widget _hospitalUrgencyWidget(BuildContext context, bool hasEmergency) {
+/*Widget _hospitalUrgencyWidget(BuildContext context, bool hasEmergency) {
   return Text(
     hasEmergency ? "Com Urgência" : "Sem Urgência",
     style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
   );
-}
+}*/

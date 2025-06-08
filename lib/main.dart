@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:prjectcm/connectivity_module.dart';
 import 'package:prjectcm/data/http_sns_datasource.dart';
-import 'package:prjectcm/data/sns_repository.dart';
 import 'package:prjectcm/main_screen.dart';
 import 'package:prjectcm/service/connectivity_service.dart';
 import 'package:prjectcm/theme.dart';
 import 'package:provider/provider.dart';
-
 import 'data/sqflite_sns_datasource.dart';
 import 'service/gps_location_service.dart';
-import 'http/http_client.dart';
 import 'location_module.dart';
 import 'dart:io' as io;
 
