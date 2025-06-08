@@ -40,7 +40,7 @@ class SnsRepository extends SnsDataSource {
       print('[DEBUG] Hospitais recebidos do remoto: ${hospitais.length}');
 
       for (var hospital in hospitais) {
-        await local.insertHospital(hospital);
+        local.insertHospital(hospital);
       }
       return hospitais;
     } else {
