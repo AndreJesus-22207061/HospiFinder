@@ -85,7 +85,7 @@ A app é composta por **5 páginas principais**, com uma interface intuitiva e f
 
 A apresentação da aplicação, demonstrando as principais funcionalidades, pode ser visualizada no seguinte vídeo:
 
-🔗 [Video Apesentação HospiFinder](https://youtu.be/pEKdrLqdoxg)
+🔗 [Video Apresentação HospiFinder](https://youtu.be/pEKdrLqdoxg)
 
 ---
 
