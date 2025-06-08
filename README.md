@@ -250,7 +250,7 @@ Classe repositório que combina as fontes de dados local (`SqfliteSnsDataSource`
 Durante o desenvolvimento da aplicação, foram consultadas diversas fontes externas para auxiliar na implementação de funcionalidades que não foram abordadas diretamente nas aulas ou nos vídeos fornecidos. Abaixo estão listadas algumas dessas fontes:
 
 - [YouTube – Flutter Google Maps Tutorial](https://youtu.be/M7cOmiSly3Q?si=50yc7vlakMaxRz3Z) – Tutorial utilizado para a **implementação do mapa com marcadores** usando o `google_maps_flutter`;
--
+- [Introdução ao Dart e ao Flutter](https://www.youtube.com/watch?v=b4ZxFLW7neQ&list=PL_wKlpKIC9vWubXsj3IRPZ2Rk6QMfsPPg)  - Tutorial para ajuda no desenvolvimento de algumas funcionalidades do projeto.
 
 ---
 
