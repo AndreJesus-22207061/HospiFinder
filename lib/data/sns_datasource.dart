@@ -1,6 +1,7 @@
 import 'package:prjectcm/models/evaluation_report.dart';
 
 import '../models/hospital.dart';
+import '../models/locationIPMA.dart';
 import '../models/waiting_time.dart';
 
 abstract class SnsDataSource {
@@ -22,6 +23,12 @@ abstract class SnsDataSource {
   Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital);
 
   Future<void> adicionarUltimoAcedido(int hospitalId);
+
+  Future<Set<int>> getHospitalFavouritesIds();
+
+  Future<void> toggleFavorite(int hospitalId);
+
+  Future<List<LocalidadeIPMA>> getLocations();
 
 
 }

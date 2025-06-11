@@ -1,13 +1,34 @@
 import 'dart:convert';
 
+import 'package:location/location.dart';
 import 'package:prjectcm/data/sns_datasource.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
+import 'package:prjectcm/models/locationIPMA.dart';
 import 'package:prjectcm/models/waiting_time.dart';
 import '../http/http_client.dart';
 
 class HttpSnsDataSource extends SnsDataSource {
   HttpClient _client = HttpClient();
+
+
+
+  @override
+  Future<List<LocalidadeIPMA>> getLocations() async {
+    final response = await _client.get(
+      url: 'https://api.ipma.pt/open-data/distrits-islands.json',
+    );
+
+    if (response.statusCode == 200) {
+      final reponseJSON = jsonDecode(response.body);
+      List localidadesJSON = reponseJSON['Data'];
+      return localidadesJSON
+          .map((json) => LocalidadeIPMA.fromJSON(json))
+          .toList();
+    } else {
+      throw Exception('Erro ao obter localidades: ${response.statusCode}');
+    }
+  }
 
 
   @override
@@ -90,6 +111,16 @@ class HttpSnsDataSource extends SnsDataSource {
 
   @override
   Future<List<EvaluationReport>> getEvaluationsByHospitalId(Hospital hospital) async{
+    throw Exception('Not available');
+  }
+
+  @override
+  Future<void> toggleFavorite(int hospitalId) {
+    throw Exception('Not available');
+  }
+
+  @override
+  Future<Set<int>> getHospitalFavouritesIds() {
     throw Exception('Not available');
   }
 

@@ -2,6 +2,7 @@ import 'package:path/path.dart';
 import 'package:prjectcm/data/sns_datasource.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
+import 'package:prjectcm/models/locationIPMA.dart';
 import 'package:prjectcm/models/waiting_time.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -22,7 +23,8 @@ class SqfliteSnsDataSource extends SnsDataSource {
           'phoneNumber INTEGER, '
           'email TEXT, '
           'district TEXT, '
-          'hasEmergency INTEGER '
+          'hasEmergency INTEGER, '
+              'isFavorite INTEGER '
           ')',
         );
         print('Tabela hospital criada');
@@ -65,6 +67,19 @@ class SqfliteSnsDataSource extends SnsDataSource {
               timestamp INTEGER
             )
             ''');
+        await db.execute(
+          'CREATE TABLE localidade('
+              'local TEXT PRIMARY KEY, '
+              'idAreaAviso TEXT NOT NULL, '
+              'latitude REAL NOT NULL, '
+              'longitude REAL NOT NULL, '
+              'idRegiao INTEGER, '
+              'idConcelho INTEGER, '
+              'globalIdLocal INTEGER, '
+              'idDistrito INTEGER, '
+              ')',
+        );
+        print('Tabela Localizações criada');
       },
       version: 1,
     );
@@ -235,5 +250,46 @@ class SqfliteSnsDataSource extends SnsDataSource {
     final caminho = join(await getDatabasesPath(), 'hospitals.db');
     await deleteDatabase(caminho);
     print('Base de dados apagada com sucesso.');
+  }
+
+  @override
+  Future<void> toggleFavorite(int hospitalId) async{
+    final db = await database!;
+    final result = await db.query(
+      'hospital',
+      columns: ['isFavorite'],
+      where: 'id = ?',
+      whereArgs: [hospitalId],
+    );
+    if (result.isNotEmpty) {
+      final current = result.first['isFavorite'] == 1;
+      final novoValor = current ? 0 : 1;
+
+      await db.update(
+        'hospital',
+        {'isFavorite': novoValor},
+        where: 'id = ?',
+        whereArgs: [hospitalId],
+      );
+    }
+
+  }
+
+  @override
+  Future<Set<int>> getHospitalFavouritesIds() async {
+    final db = await database!;
+    final results = await db.query(
+      'hospital',
+      columns: ['id'],
+      where: 'isFavorite = ?',
+      whereArgs: [1],
+    );
+    return results.map((e) => e['id'] as int).toSet();
+  }
+
+  @override
+  Future<List<LocalidadeIPMA>> getLocations() {
+    // TODO: implement getLocations
+    throw UnimplementedError();
   }
 }

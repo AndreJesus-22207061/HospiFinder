@@ -6,6 +6,7 @@ import 'package:prjectcm/data/sqflite_sns_datasource.dart';
 import 'package:prjectcm/location_module.dart';
 import 'package:prjectcm/models/evaluation_report.dart';
 import 'package:prjectcm/models/hospital.dart';
+import 'package:prjectcm/models/locationIPMA.dart';
 import 'package:prjectcm/models/waiting_time.dart';
 import 'http_sns_datasource.dart';
 
@@ -34,14 +35,33 @@ class SnsRepository extends SnsDataSource {
     bool online = await connectivityModule.checkConnectivity();
     print('[DEBUG] Está online? $online');
 
+
     if (online) {
       print('[DEBUG] Obtendo hospitais do remoto...');
+
       var hospitais = await remote.getAllHospitals();
       print('[DEBUG] Hospitais recebidos do remoto: ${hospitais.length}');
 
+      var favorites = await local.getHospitalFavouritesIds();
+
       for (var hospital in hospitais) {
-        local.insertHospital(hospital);
+          final hospitalComFavorito = Hospital(
+            id: hospital.id,
+            name: hospital.name,
+            latitude: hospital.latitude,
+            longitude: hospital.longitude,
+            address: hospital.address,
+            phoneNumber: hospital.phoneNumber,
+            email: hospital.email,
+            district: hospital.district,
+            hasEmergency: hospital.hasEmergency,
+            isFavorite: favorites.contains(hospital.id),
+          );
+        local.insertHospital(hospitalComFavorito);
+        hospital.isFavorite = favorites.contains(hospital.id);
       }
+
+
       return hospitais;
     } else {
       print('[DEBUG] Offline, obtendo hospitais do local...');
@@ -71,6 +91,9 @@ class SnsRepository extends SnsDataSource {
 
     final avaliacoes = await getEvaluationsByHospitalId(hospital);
     hospital.reports = avaliacoes;
+
+    final favorites = await local.getHospitalFavouritesIds();
+    hospital.isFavorite = favorites.contains(hospital.id);
 
 
 
@@ -146,6 +169,16 @@ class SnsRepository extends SnsDataSource {
     await local.adicionarUltimoAcedido(hospitalId);
   }
 
+  @override
+  Future<Set<int>> getHospitalFavouritesIds() async {
+    return await local.getHospitalFavouritesIds();
+  }
+
+  @override
+  Future<void> toggleFavorite(int hospitalId) async {
+    await local.toggleFavorite(hospitalId);
+  }
+
 
 
   Future<List<Hospital>> listarUltimosAcedidos() async {
@@ -167,6 +200,8 @@ class SnsRepository extends SnsDataSource {
   List<Hospital> filtrarHospitaisComUrgencia(List<Hospital> lista) {
     return lista.where((hospital) => hospital.hasEmergency).toList();
   }
+
+
 
   List<Hospital> ordenarListaPorDistancia(List<Hospital> lista, double minhaLat, double minhaLon) {
     final copia = lista
@@ -232,6 +267,12 @@ class SnsRepository extends SnsDataSource {
 
   List<Widget> gerarEstrelasParaAvaliacao(EvaluationReport avaliacao, {double size = 20}) {
     return _gerarEstrelas(avaliacao.rating.toDouble(), size: size);
+  }
+
+  @override
+  Future<List<LocalidadeIPMA>> getLocations() {
+    // TODO: implement getLocations
+    throw UnimplementedError();
   }
 
 

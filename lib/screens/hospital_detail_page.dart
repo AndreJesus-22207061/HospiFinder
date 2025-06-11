@@ -195,6 +195,38 @@ class _HospitalDetailPageState extends State<HospitalDetailPage> {
                 buildDetalhesUrgencia(hospital),
               ],
             ),
+            SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                  onPressed: () async {
+                    await snsRepository.toggleFavorite(hospital.id);
+                    setState(() {});
+                  },
+                  icon: Icon(
+                    hospital.isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: hospital.isFavorite ? Colors.red : Colors.grey,
+                  ),
+                  label: Text(
+                    hospital.isFavorite ? 'Favorito' : 'Adicionar aos favoritos',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    shadowColor: Colors.black26,
+                    elevation: 2,
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -662,6 +694,18 @@ Widget buildAvaliacoesSection(
                 color: Colors.black,
               ),
             ),
+
+          ),
+          Center(
+            child: Text(
+              "Numero de Avaliações: ${hospital.reports.length}",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+
           ),
           const SizedBox(height: 10),
           if (hospital.reports.isNotEmpty)

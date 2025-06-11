@@ -71,7 +71,12 @@ class _HospitalBoxState extends State<HospitalBox> {
       child: Padding(
         padding: const EdgeInsets.only(
             left: 8.0, right: 0.0, top: 6.0, bottom: 6.0),
-        child: _hospitalListTile(context, widget.hospital, widget.userLat, widget.userLon ,  widget.estrelas , widget.media  , snsRepository),
+        child: Column(
+          children: [
+            _hospitalListTile(context, widget.hospital, widget.userLat, widget.userLon ,  widget.estrelas , widget.media  , snsRepository),
+          ],
+        ),
+
       ),
     );
   }

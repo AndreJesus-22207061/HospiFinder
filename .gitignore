@@ -1,5 +1,16 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
 # Created by https://www.toptal.com/developers/gitignore/api/android,androidstudio,flutter
 # Edit at https://www.toptal.com/developers/gitignore?templates=android,androidstudio,flutter
+
+
+##ignorar pasta testes
+
+/test/
+/integration_test/
+
 
 ### Android ###
 # Gradle files

@@ -369,6 +369,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
         _notas = value;
         state.didChange(value);
       },
+      validator: (value) => value == null ? 'Preecha as notas' : null,
       onSaved: (value) {
         _notas = value ?? '';
       },
@@ -403,7 +404,7 @@ class _AvaliacaoPageState extends State<AvaliacaoPage> {
         hospitalId: _selectedHospital!.id,
         rating: _avaliacao!,
         dataHora: _selectedDate,
-        notas: _notas,
+        notas: _notas!,
       );
 
       print('[DEBUG SUBMIT] Avaliação criada:');

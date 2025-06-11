@@ -12,6 +12,7 @@ class Hospital {
   final String district;
   final bool hasEmergency;
   List<EvaluationReport> reports;
+  bool isFavorite;
 
   Hospital(
       {required this.id,
@@ -24,6 +25,7 @@ class Hospital {
         required this.district,
         required this.hasEmergency,
         List<EvaluationReport>? avaliacoes,
+        this.isFavorite = false,
       }) : reports = avaliacoes ?? [];
 
 
@@ -52,6 +54,7 @@ class Hospital {
       email: db['email'] ?? 'sem@email.pt',
       district: db['district'] ?? 'Desconhecido',
       hasEmergency: (db['hasEmergency'] ?? 0) == 1,
+      isFavorite: (db['isFavorite']?? 0) == 1,
     );
   }
 
@@ -67,6 +70,7 @@ class Hospital {
       'email': email,
       'district': district,
       'hasEmergency': hasEmergency ? 1 : 0,
+      'isFavorite': isFavorite ? 1 : 0
     };
   }
 
@@ -96,6 +100,10 @@ class Hospital {
       final distanciaKm = distanciaMetros / 1000;
       return '${distanciaKm.toStringAsFixed(1)} km';
     }
+  }
+
+  bool isNorth() {
+    return latitude >= 39.5;
   }
 
 
