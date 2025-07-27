@@ -11,7 +11,7 @@
 
 ## 📝 Descrição Geral
 
-Aplicação móvel desenvolvida em **Flutter/Dart**, com o objetivo de permitir aos utilizadores consultar e avaliar hospitais, promovendo um acesso rápido e eficaz a informações úteis.
+Aplicação móvel desenvolvida em **Flutter/Dart**, com o objetivo de permitir aos utilizadores consultar e avaliar hospitais, promovendo um acesso rápido e eficaz a informações bastante úteis.
 
 A app é composta por **5 páginas principais**, com uma interface intuitiva e funcionalidades otimizadas tanto para uso online como offline.
 
